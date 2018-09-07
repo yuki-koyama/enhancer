@@ -55,7 +55,7 @@ namespace enhancer
             if (M - m < 1e-14) return 0.0;
             return (M - m) / (1.0 - abs(M + m - 1.0));
         }
-
+        
         inline Eigen::Vector3d hsl2rgb(const Eigen::Vector3d& hsl)
         {
             auto hue2rgb = [](const double f1, const double f2, double hue)
@@ -154,6 +154,23 @@ namespace enhancer
             const double l = rgb2l(rgb);
             
             return Eigen::Vector3d(h, s, l);
+        }
+        
+        inline float clamp(const float value) { return std::max(0.0, std::min(static_cast<double>(value), 1.0)); }
+        inline Eigen::Vector3d clamp(const Eigen::Vector3d& v) { return Eigen::Vector3d(clamp(v.x()), clamp(v.y()), clamp(v.z())); }
+        
+        inline Eigen::Vector3d changeColorBalance(const Eigen::Vector3d& inputRgb, const Eigen::Vector3d& shift)
+        {
+            const double a     = 0.250;
+            const double b     = 0.333;
+            const double scale = 0.700;
+            
+            const double          lightness = rgb2l(inputRgb);
+            const Eigen::Vector3d midtones  = (clamp((lightness - b) / a + 0.5) * clamp((lightness + b - 1.0) / (- a) + 0.5) * scale) * shift;
+            const Eigen::Vector3d newColor  = clamp(inputRgb + midtones);
+            const Eigen::Vector3d newHsl    = rgb2hsl(newColor);
+            
+            return hsl2rgb(Eigen::Vector3d(newHsl(0), newHsl(1), lightness));
         }
     }
 }
