@@ -5,7 +5,15 @@
 
 namespace enhancer
 {
-    // inline Eigen::Vector3d enhance(const Eigen::VectorXd& parameters);
+    ///////////////////////////////////////////////////////////
+    // Interface
+    ///////////////////////////////////////////////////////////
+    
+    inline Eigen::Vector3d enhance(const Eigen::Vector3d& input_rgb, const Eigen::VectorXd& parameters);
+    
+    ///////////////////////////////////////////////////////////
+    // Implementation
+    ///////////////////////////////////////////////////////////
     
     namespace internal
     {
@@ -172,6 +180,38 @@ namespace enhancer
             
             return hsl2rgb(Eigen::Vector3d(newHsl(0), newHsl(1), lightness));
         }
+    }
+    
+    inline Eigen::Vector3d enhance(const Eigen::Vector3d& input_rgb, const Eigen::VectorXd& parameters)
+    {
+        assert(parameters.size() == 6);
+        
+        const double          brightness = parameters[0] - 0.5;
+        const double          contrast   = parameters[1] - 0.5;
+        const double          saturation = parameters[2] - 0.5;
+        const Eigen::Vector3d balance    = parameters.segment<3>(3) - Eigen::Vector3d::Constant(0.5);
+        
+        // color balance
+        Eigen::Vector3d rgb = internal::changeColorBalance(input_rgb, balance);
+        
+        // brightness
+        for (int k = 0; k < 3; ++ k) { rgb[k] *= 1.0 + brightness; }
+        
+        // contrast
+        const double contrast_coef = std::tan((contrast + 1.0) * M_PI_4);
+        for (int k = 0; k < 3; ++ k) { rgb[k] = (rgb[k] - 0.5) * contrast_coef + 0.5; }
+        
+        // clamp
+        rgb = internal::clamp(rgb);
+        
+        // saturation
+        Eigen::Vector3d hsv = internal::rgb2hsv(rgb);
+        double s = hsv.y();
+        s *= saturation + 1.0;
+        hsv(1) = internal::clamp(s);
+        const Eigen::Vector3d output_rgb = internal::hsv2rgb(hsv);
+        
+        return output_rgb;
     }
 }
 
