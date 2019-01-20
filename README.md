@@ -2,7 +2,17 @@
 
 A C++11 / GLSL library for enhancing photographs / images (adjusting brightness, contrast, etc.)
 
-## API
+## Supported Parameters
+
+- Brightness
+- Contrast
+- Saturation
+- Color Balance
+  - Red
+  - Green
+  - Blue
+
+## C++ API
 
 ```
 Eigen::Vector3d enhance(const Eigen::Vector3d& input_rgb,
