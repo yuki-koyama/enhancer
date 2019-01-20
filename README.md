@@ -12,6 +12,10 @@ A C++11 / GLSL library for enhancing photographs / images (adjusting brightness,
   - Green
   - Blue
 
+## Dependencies
+
+- Eigen
+
 ## C++ API
 
 ```
