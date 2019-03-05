@@ -1,9 +1,13 @@
 #ifndef enhancerwidget_hpp
 #define enhancerwidget_hpp
 
+#include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 #include <QImage>
+
+class QOpenGLShaderProgram;
+class QOpenGLTexture;
 
 namespace enhancer
 {
@@ -11,7 +15,7 @@ namespace enhancer
     {
     public:
         EnhancerWidget(QWidget* parent = nullptr);
-        void setImage(const QImage& image) { image_ = image; }
+        void setImage(const QImage& image);
 
     protected:
         void initializeGL() override;
@@ -20,6 +24,10 @@ namespace enhancer
 
     private:
         QImage image_;
+
+        QOpenGLShaderProgram* program_;
+        QOpenGLTexture* texture_;
+        QOpenGLBuffer vbo;
     };
 }
 
