@@ -1,4 +1,10 @@
+#include <enhancer/enhancerwidget.hpp>
+#include <QApplication>
+
 int main(int argc, char** argv)
 {
-    return 0;
+    QApplication app(argc, argv);
+    enhancer::EnhancerWidget widget;
+    widget.show();
+    return app.exec();
 }

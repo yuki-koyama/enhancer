@@ -292,7 +292,7 @@ void main()
         program_->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 2, 4 * sizeof(GLfloat));
         program_->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 2 * sizeof(GLfloat), 2, 4 * sizeof(GLfloat));
 
-        texture_->bind();
+        if (texture_) { texture_->bind(); }
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     }
 
