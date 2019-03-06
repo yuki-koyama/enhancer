@@ -2,6 +2,7 @@
 #define enhancerwidget_hpp
 
 #include <array>
+#include <cassert>
 #include <memory>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions_3_2_Core>
@@ -30,6 +31,13 @@ namespace enhancer
         template <typename T>
         void setParameters(const std::array<T, 6>& parameters)
         {
+            for (int i = 0; i < 6; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
+        }
+
+        template <typename T>
+        void setParameters(const std::vector<T>& parameters)
+        {
+            assert(parameters.size() == 6);
             for (int i = 0; i < 6; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
         }
 
