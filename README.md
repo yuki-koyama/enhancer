@@ -1,6 +1,11 @@
 # enhancer
 
-A C++11 / GLSL library for enhancing photographs / images (adjusting brightness, contrast, etc.)
+A C++11 / GLSL library for enhancing photographs (adjusting brightness, contrast, etc.).
+
+This repository contains the following three features:
+- __GLSL shaders__: Enhancement functionality as shaders for real-time enhancement applications.
+- __C++ functions__: Enhancement functionality as C++ functions for display-less environments.
+- __Qt Widget__: Utility Qt-based widget for easing the use of the GLSL shaders.
 
 ## Supported Parameters
 
@@ -12,9 +17,20 @@ A C++11 / GLSL library for enhancing photographs / images (adjusting brightness,
   - Green
   - Blue
 
+## Required Runtime Environments
+
+- GLSL 3.3
+- OpenGL 3.2 (for Qt features only)
+
 ## Dependencies
 
+### C++ Features
+
 - Eigen
+
+### C++ Qt Features
+
+- Qt5
 
 ## C++ API
 
