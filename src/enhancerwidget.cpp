@@ -13,6 +13,8 @@ namespace enhancer
     {
         image_ = QImage(64, 64, QImage::Format_RGBA8888);
         image_.fill(Qt::GlobalColor::darkGray);
+
+        parameters_.fill(0.5);
     }
 
     EnhancerWidget::~EnhancerWidget()
@@ -100,11 +102,7 @@ namespace enhancer
             program_->enableAttributeArray("vertex_position");
             program_->setAttributeBuffer("vertex_position", GL_FLOAT, 0, 2, 2 * sizeof(GLfloat));
 
-            constexpr GLfloat parameters[] =
-            {
-                0.5, 0.5, 0.5, 0.5, 0.5, 0.5
-            };
-            program_->setUniformValueArray("parameters", parameters, 6, 1);
+            program_->setUniformValueArray("parameters", parameters_.data(), 6, 1);
 
             glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
             program_->disableAttributeArray("vertex_position");
