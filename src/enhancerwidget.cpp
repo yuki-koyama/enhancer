@@ -16,8 +16,6 @@ namespace enhancer
     {
         makeCurrent();
         vbo.destroy();
-        if (texture_ != nullptr) { delete texture_; }
-        delete program_;
         doneCurrent();
     }
 
@@ -26,7 +24,7 @@ namespace enhancer
         image_ = image;
 
         if (texture_ != nullptr) { exit(1); } // TODO
-        texture_ = new QOpenGLTexture(image_.mirrored());
+        texture_ = std::make_shared<QOpenGLTexture>(image_.mirrored());
     }
 
     void EnhancerWidget::initializeGL()
@@ -280,7 +278,7 @@ void main()
         )";
         fragment_shader->compileSourceCode(fragment_shader_source);
 
-        program_ = new QOpenGLShaderProgram();
+        program_ = std::make_shared<QOpenGLShaderProgram>();
         program_->addShader(vertex_shader);
         program_->addShader(fragment_shader);
         program_->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);

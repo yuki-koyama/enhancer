@@ -1,6 +1,7 @@
 #ifndef enhancerwidget_hpp
 #define enhancerwidget_hpp
 
+#include <memory>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
@@ -27,8 +28,8 @@ namespace enhancer
     private:
         QImage image_;
 
-        QOpenGLShaderProgram* program_;
-        QOpenGLTexture* texture_;
+        std::shared_ptr<QOpenGLShaderProgram> program_;
+        std::shared_ptr<QOpenGLTexture> texture_;
         QOpenGLBuffer vbo;
     };
 }
