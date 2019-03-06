@@ -1,6 +1,9 @@
-uniform sampler2D texture;
-uniform vec3 first;
-uniform vec3 second;
+#version 330
+
+smooth in vec2 vertex_uv;
+out vec4 frag_color;
+uniform sampler2D texture_sampler;
+uniform float parameters[6];
 
 float rgb2h(vec3 rgb)
 {
@@ -186,35 +189,40 @@ vec3 hsv2rgb(vec3 hsv) {
 
 void main()
 {
-    vec4 color = texture2D(texture, vec2(gl_TexCoord[0]));
+    // Get raw texture color
+    vec4 color = texture(texture_sampler, vertex_uv);
 
-    vec3 p1 = first  - vec3(0.5, 0.5, 0.5);
-    vec3 p2 = second - vec3(0.5, 0.5, 0.5);
+    // Retrieve enhancement parameters
+    float brightness = parameters[0] - 0.5;
+    float contrast = parameters[1] - 0.5;
+    float saturation = parameters[2] - 0.5;
+    vec3 color_balance = vec3(parameters[3], parameters[4], parameters[5]);
 
-    // color balance
-    color.xyz = changeColorBalance(color.xyz, p2);
+    // Apply color balance
+    color.xyz = changeColorBalance(color.xyz, color_balance);
 
-    // brightness
-    color.x *= 1.0 + p1.x;
-    color.y *= 1.0 + p1.x;
-    color.z *= 1.0 + p1.x;
+    // Apply brightness
+    color.x *= 1.0 + brightness;
+    color.y *= 1.0 + brightness;
+    color.z *= 1.0 + brightness;
 
-    // contrast
-    float cont = tan((p1.y + 1.0) * 3.1415926535 * 0.25);
+    // Apply contrast
+    float cont = tan((contrast + 1.0) * 3.1415926535 * 0.25);
     color.x = (color.x - 0.5) * cont + 0.5;
     color.y = (color.y - 0.5) * cont + 0.5;
     color.z = (color.z - 0.5) * cont + 0.5;
 
-    // clamp
+    // Clamp the values
     color = clamp(color, 0.0, 1.0);
 
-    // saturation
+    // Apply saturation
     vec3 hsvVector = rgb2hsv(color.xyz);
     float s = hsvVector.y;
-    s *= p1.z + 1.0;
+    s *= saturation + 1.0;
     s = clamp(s, 0.0, 1.0);
     hsvVector.y = s;
     color.xyz = hsv2rgb(hsvVector);
 
-    gl_FragColor = color;
+    // Output the resulting color
+    frag_color = color;
 }
