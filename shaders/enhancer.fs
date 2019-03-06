@@ -196,7 +196,7 @@ void main()
     float brightness = parameters[0] - 0.5;
     float contrast = parameters[1] - 0.5;
     float saturation = parameters[2] - 0.5;
-    vec3 color_balance = vec3(parameters[3], parameters[4], parameters[5]);
+    vec3 color_balance = vec3(parameters[3] - 0.5, parameters[4] - 0.5, parameters[5] - 0.5);
 
     // Apply color balance
     color.xyz = changeColorBalance(color.xyz, color_balance);
