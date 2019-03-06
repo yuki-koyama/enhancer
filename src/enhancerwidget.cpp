@@ -12,12 +12,21 @@ namespace enhancer
     {
     }
 
+    EnhancerWidget::~EnhancerWidget()
+    {
+        makeCurrent();
+        vbo.destroy();
+        if (texture_ != nullptr) { delete texture_; }
+        delete program_;
+        doneCurrent();
+    }
+
     void EnhancerWidget::setImage(const QImage& image)
     {
         image_ = image;
 
         if (texture_ != nullptr) { exit(1); } // TODO
-        texture_ = new QOpenGLTexture(image.mirrored());
+        texture_ = new QOpenGLTexture(image_.mirrored());
     }
 
     void EnhancerWidget::initializeGL()

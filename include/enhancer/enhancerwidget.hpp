@@ -15,6 +15,8 @@ namespace enhancer
     {
     public:
         EnhancerWidget(QWidget* parent = nullptr);
+        ~EnhancerWidget();
+
         void setImage(const QImage& image);
 
     protected:
