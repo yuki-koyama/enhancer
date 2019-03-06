@@ -88,6 +88,25 @@ namespace enhancer
         glClearColor(0.0, 0.0, 0.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        const int image_width = this->image_.width();
+        const int image_height = this->image_.height();
+        const int w = width() * devicePixelRatio();
+        const int h = height() * devicePixelRatio();
+        if (w * image_height == h * image_width)
+        {
+            glViewport(0, 0, w, h);
+        }
+        else if (w * image_height > h * image_width)
+        {
+            const int w_corrected = h * image_width / image_height;
+            glViewport((w - w_corrected) / 2, 0, w_corrected, h);
+        }
+        else if (w * image_height < h * image_width)
+        {
+            const int h_corrected = w * image_height / image_width;
+            glViewport(0, (h - h_corrected) / 2, w, h_corrected);
+        }
+
         if (dirty_)
         {
             texture_ = std::make_shared<QOpenGLTexture>(image_.mirrored(), QOpenGLTexture::DontGenerateMipMaps);
@@ -115,6 +134,5 @@ namespace enhancer
 
     void EnhancerWidget::resizeGL(int width, int height)
     {
-        glViewport(0, 0, width, height);
     }
 }
