@@ -1,63 +1,94 @@
 #include <enhancer/enhancerwidget.hpp>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
+#include <iostream>
 
-#define PROGRAM_VERTEX_ATTRIBUTE 0
-#define PROGRAM_TEXCOORD_ATTRIBUTE 1
+#define TEXTURE_UNIT_ID 0
 
 namespace enhancer
 {
     EnhancerWidget::EnhancerWidget(QWidget* parent) :
-    QOpenGLWidget(parent)
+    QOpenGLWidget(parent),
+    dirty_(true)
     {
+        image_ = QImage(64, 64, QImage::Format_RGBA8888);
+        image_.fill(Qt::GlobalColor::darkGray);
     }
 
     EnhancerWidget::~EnhancerWidget()
     {
         makeCurrent();
         vbo.destroy();
+        vao.destroy();
+        texture_->destroy();
         doneCurrent();
     }
 
     void EnhancerWidget::setImage(const QImage& image)
     {
         image_ = image;
-
-        if (texture_ != nullptr) { exit(1); } // TODO
-        texture_ = std::make_shared<QOpenGLTexture>(image_.mirrored());
+        dirty_ = true;
     }
 
     void EnhancerWidget::initializeGL()
     {
-        initializeOpenGLFunctions();
+        const bool is_opengl_ready = initializeOpenGLFunctions();
 
-        constexpr GLfloat vertex_data[] =
+        if (!is_opengl_ready)
         {
-            0.0, 0.0, -1.0, -1.0,
-            1.0, 0.0, +1.0, -1.0,
-            1.0, 1.0, +1.0, +1.0,
-            0.0, 1.0, -1.0, +1.0,
-        };
+            std::cerr << "Error: Failed to prepare OpenGL profile." << std::endl;
+            exit(1);
+        }
 
+        const GLubyte* opengl_version = glGetString(GL_VERSION);
+        const GLubyte* glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
+        std::cout << "OpenGL Version: " << opengl_version << std::endl;
+        std::cout << "GLSL Version: " << glsl_version << std::endl;
+
+        vao.create();
         vbo.create();
+
+        vao.bind();
         vbo.bind();
-        vbo.allocate(vertex_data, sizeof(vertex_data) * sizeof(GLfloat));
+        {
+            constexpr GLfloat vertex_data[] =
+            {
+                -1.0, -1.0,
+                +1.0, -1.0,
+                +1.0, +1.0,
+                -1.0, +1.0,
+            };
+            vbo.allocate(vertex_data, sizeof(vertex_data) * sizeof(GLfloat));
+        }
+        vbo.release();
+        vao.release();
 
         QOpenGLShader *vertex_shader = new QOpenGLShader(QOpenGLShader::Vertex, this);
         const char *vertex_shader_source = R"(
+/* ---------------------------------------------------------------------------*/
+#version 330
+
+layout(location = 0) in vec2 vertex_position;
+smooth out vec2 vertex_uv;
+
 void main()
 {
-    gl_Position    = gl_Vertex;
-    gl_TexCoord[0] = gl_MultiTexCoord0;
+    gl_Position = vec4(vertex_position, 0.0, 1.0);
+    vertex_uv = vertex_position * vec2(0.5) + vec2(0.5);
 }
+/* ---------------------------------------------------------------------------*/
         )";
         vertex_shader->compileSourceCode(vertex_shader_source);
 
         QOpenGLShader *fragment_shader = new QOpenGLShader(QOpenGLShader::Fragment, this);
         const char *fragment_shader_source = R"(
-uniform sampler2D texture;
-uniform vec3 first;
-uniform vec3 second;
+/* ---------------------------------------------------------------------------*/
+#version 330
+
+smooth in vec2 vertex_uv;
+out vec4 frag_color;
+uniform sampler2D texture_sampler;
+uniform float parameters[6];
 
 float rgb2h(vec3 rgb)
 {
@@ -243,50 +274,57 @@ vec3 hsv2rgb(vec3 hsv) {
 
 void main()
 {
-    vec4 color = texture2D(texture, vec2(gl_TexCoord[0]));
+    // Get raw texture color
+    vec4 color = texture(texture_sampler, vertex_uv);
 
-    vec3 p1 = first  - vec3(0.5, 0.5, 0.5);
-    vec3 p2 = second - vec3(0.5, 0.5, 0.5);
+    // Retrieve enhancement parameters
+    float brightness = parameters[0] - 0.5;
+    float contrast = parameters[1] - 0.5;
+    float saturation = parameters[2] - 0.5;
+    vec3 color_balance = vec3(parameters[3], parameters[4], parameters[5]);
 
-    // color balance
-    color.xyz = changeColorBalance(color.xyz, p2);
+    // Apply color balance
+    color.xyz = changeColorBalance(color.xyz, color_balance);
 
-    // brightness
-    color.x *= 1.0 + p1.x;
-    color.y *= 1.0 + p1.x;
-    color.z *= 1.0 + p1.x;
+    // Apply brightness
+    color.x *= 1.0 + brightness;
+    color.y *= 1.0 + brightness;
+    color.z *= 1.0 + brightness;
 
-    // contrast
-    float cont = tan((p1.y + 1.0) * 3.1415926535 * 0.25);
+    // Apply contrast
+    float cont = tan((contrast + 1.0) * 3.1415926535 * 0.25);
     color.x = (color.x - 0.5) * cont + 0.5;
     color.y = (color.y - 0.5) * cont + 0.5;
     color.z = (color.z - 0.5) * cont + 0.5;
 
-    // clamp
+    // Clamp the values
     color = clamp(color, 0.0, 1.0);
 
-    // saturation
+    // Apply saturation
     vec3 hsvVector = rgb2hsv(color.xyz);
     float s = hsvVector.y;
-    s *= p1.z + 1.0;
+    s *= saturation + 1.0;
     s = clamp(s, 0.0, 1.0);
     hsvVector.y = s;
     color.xyz = hsv2rgb(hsvVector);
 
-    gl_FragColor = color;
+    // Output the resulting color
+    frag_color = color;
 }
+/* ---------------------------------------------------------------------------*/
         )";
         fragment_shader->compileSourceCode(fragment_shader_source);
 
         program_ = std::make_shared<QOpenGLShaderProgram>();
         program_->addShader(vertex_shader);
         program_->addShader(fragment_shader);
-        program_->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-        program_->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
         program_->link();
 
         program_->bind();
-        program_->setUniformValue("texture", 0);
+        {
+            program_->setUniformValue("texture_sampler", TEXTURE_UNIT_ID);
+        }
+        program_->release();
     }
 
     void EnhancerWidget::paintGL()
@@ -294,13 +332,33 @@ void main()
         glClearColor(0.0, 0.0, 0.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        program_->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-        program_->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-        program_->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 2, 4 * sizeof(GLfloat));
-        program_->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 2 * sizeof(GLfloat), 2, 4 * sizeof(GLfloat));
+        if (dirty_)
+        {
+            texture_ = std::make_shared<QOpenGLTexture>(image_.mirrored(), QOpenGLTexture::DontGenerateMipMaps);
+            dirty_ = false;
+        }
 
-        if (texture_) { texture_->bind(); }
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        program_->bind();
+        vao.bind();
+        vbo.bind();
+        texture_->bind(TEXTURE_UNIT_ID);
+        {
+            program_->enableAttributeArray("vertex_position");
+            program_->setAttributeBuffer("vertex_position", GL_FLOAT, 0, 2, 2 * sizeof(GLfloat));
+
+            constexpr GLfloat parameters[] =
+            {
+                0.5, 0.6, 0.4, 0.2, 0.2, 0.9
+            };
+            program_->setUniformValueArray("parameters", parameters, 6, 1);
+
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+            program_->disableAttributeArray("vertex_position");
+        }
+        texture_->release();
+        vbo.release();
+        vao.release();
+        program_->release();
     }
 
     void EnhancerWidget::resizeGL(int width, int height)

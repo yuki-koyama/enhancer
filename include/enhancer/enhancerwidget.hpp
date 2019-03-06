@@ -3,7 +3,8 @@
 
 #include <memory>
 #include <QOpenGLBuffer>
-#include <QOpenGLFunctions>
+#include <QOpenGLFunctions_3_2_Core>
+#include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
 #include <QImage>
 
@@ -12,7 +13,7 @@ class QOpenGLTexture;
 
 namespace enhancer
 {
-    class EnhancerWidget : public QOpenGLWidget, protected QOpenGLFunctions
+    class EnhancerWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_2_Core
     {
     public:
         EnhancerWidget(QWidget* parent = nullptr);
@@ -27,9 +28,12 @@ namespace enhancer
 
     private:
         QImage image_;
+        bool dirty_;
 
         std::shared_ptr<QOpenGLShaderProgram> program_;
         std::shared_ptr<QOpenGLTexture> texture_;
+
+        QOpenGLVertexArrayObject vao;
         QOpenGLBuffer vbo;
     };
 }
