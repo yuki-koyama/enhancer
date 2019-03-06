@@ -305,5 +305,6 @@ void main()
 
     void EnhancerWidget::resizeGL(int width, int height)
     {
+        glViewport(0, 0, width, height);
     }
 }
