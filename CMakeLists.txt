@@ -17,7 +17,10 @@ if(ENHANCER_USE_QT_FEATURES)
   find_package(Qt5Gui REQUIRED)
   find_package(Qt5Widgets REQUIRED)
 
-  add_library(enhancer STATIC ${headers} ${sources})
+  set(CMAKE_AUTORCC ON)
+  qt5_add_resources(resources ${CMAKE_CURRENT_SOURCE_DIR}/enhancer-resources.qrc)
+
+  add_library(enhancer STATIC ${headers} ${sources} ${resources})
   target_link_libraries(enhancer Eigen3::Eigen Qt5::Gui Qt5::Widgets)
   target_include_directories(enhancer PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>	$<INSTALL_INTERFACE:include>)
   install(FILES ${headers} DESTINATION include/enhancer)
