@@ -20,7 +20,7 @@ This repository contains the following three features:
 ## Required Runtime Environments
 
 - GLSL 3.3
-- OpenGL 3.2 (for Qt features only)
+- OpenGL 3.2 Core Profile (for Qt features only)
 
 ## Dependencies
 
