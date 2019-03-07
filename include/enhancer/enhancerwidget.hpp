@@ -22,6 +22,7 @@ namespace enhancer
         ~EnhancerWidget();
 
         void setImage(const QImage& image);
+        const QImage& getImage() const { return image_; }
 
         void setParameters(const std::array<GLfloat, 6>& parameters)
         {
