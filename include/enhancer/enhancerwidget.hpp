@@ -42,6 +42,12 @@ namespace enhancer
             for (int i = 0; i < 6; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
         }
 
+        template <typename T>
+        void setParameters(const T parameters[])
+        {
+            for (int i = 0; i < 6; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
+        }
+
     protected:
         void initializeGL() override;
         void paintGL() override;
