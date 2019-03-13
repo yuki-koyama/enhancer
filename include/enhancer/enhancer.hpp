@@ -1,6 +1,7 @@
 #ifndef enhancer_hpp
 #define enhancer_hpp
 
+#include <cmath>
 #include <Eigen/Core>
 
 namespace enhancer
@@ -61,7 +62,7 @@ namespace enhancer
             const double m = std::min({r, g, b});
             
             if (M - m < 1e-14) return 0.0;
-            return (M - m) / (1.0 - abs(M + m - 1.0));
+            return (M - m) / (1.0 - std::abs(M + m - 1.0));
         }
         
         inline Eigen::Vector3d hsl2rgb(const Eigen::Vector3d& hsl)
