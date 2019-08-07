@@ -198,11 +198,11 @@ namespace enhancer
         Eigen::Vector3d rgb = internal::changeColorBalance(input_rgb, balance);
 
         // brightness
-        for (int k = 0; k < 3; ++ k) { rgb[k] *= 1.0 + brightness; }
+        rgb *= 1.0 + brightness;
 
         // contrast
         const double contrast_coef = std::tan((contrast + 1.0) * M_PI_4);
-        for (int k = 0; k < 3; ++ k) { rgb[k] = (rgb[k] - 0.5) * contrast_coef + 0.5; }
+        rgb = contrast_coef * (rgb - Eigen::Vector3d::Constant(0.5)) + Eigen::Vector3d::Constant(0.5);
 
         // clamp
         rgb = internal::clamp(rgb);

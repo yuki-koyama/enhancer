@@ -193,35 +193,31 @@ void main()
     vec4 color = texture(texture_sampler, vertex_uv);
 
     // Retrieve enhancement parameters
-    float brightness = parameters[0] - 0.5;
-    float contrast = parameters[1] - 0.5;
-    float saturation = parameters[2] - 0.5;
-    vec3 color_balance = vec3(parameters[3] - 0.5, parameters[4] - 0.5, parameters[5] - 0.5);
+    float brightness    = parameters[0] - 0.5;
+    float contrast      = parameters[1] - 0.5;
+    float saturation    = parameters[2] - 0.5;
+    vec3  color_balance = vec3(parameters[3], parameters[4], parameters[5]) - vec3(0.5);
 
     // Apply color balance
     color.xyz = changeColorBalance(color.xyz, color_balance);
 
     // Apply brightness
-    color.x *= 1.0 + brightness;
-    color.y *= 1.0 + brightness;
-    color.z *= 1.0 + brightness;
+    color.xyz *= 1.0 + brightness;
 
     // Apply contrast
     float cont = tan((contrast + 1.0) * 3.1415926535 * 0.25);
-    color.x = (color.x - 0.5) * cont + 0.5;
-    color.y = (color.y - 0.5) * cont + 0.5;
-    color.z = (color.z - 0.5) * cont + 0.5;
+    color.xyz = (color.xyz - vec3(0.5)) * cont + vec3(0.5);
 
     // Clamp the values
     color = clamp(color, 0.0, 1.0);
 
     // Apply saturation
-    vec3 hsvVector = rgb2hsv(color.xyz);
-    float s = hsvVector.y;
+    vec3 hsv_color = rgb2hsv(color.xyz);
+    float s = hsv_color[1];
     s *= saturation + 1.0;
     s = clamp(s, 0.0, 1.0);
-    hsvVector.y = s;
-    color.xyz = hsv2rgb(hsvVector);
+    hsv_color[1] = s;
+    color.xyz = hsv2rgb(hsv_color);
 
     // Output the resulting color
     frag_color = color;
