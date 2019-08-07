@@ -6,6 +6,8 @@
 
 namespace enhancer
 {
+    constexpr int NUM_PARAMETERS = 6;
+
     ///////////////////////////////////////////////////////////
     // Interface
     ///////////////////////////////////////////////////////////
@@ -185,8 +187,8 @@ namespace enhancer
     
     inline Eigen::Vector3d enhance(const Eigen::Vector3d& input_rgb, const Eigen::VectorXd& parameters)
     {
-        assert(parameters.size() == 6);
-        
+        assert(parameters.size() == NUM_PARAMETERS);
+
         const double          brightness = parameters[0] - 0.5;
         const double          contrast   = parameters[1] - 0.5;
         const double          saturation = parameters[2] - 0.5;

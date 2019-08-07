@@ -9,6 +9,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
 #include <QImage>
+#include <enhancer/enhancer.hpp>
 
 class QOpenGLShaderProgram;
 class QOpenGLTexture;
@@ -24,28 +25,28 @@ namespace enhancer
         void setImage(const QImage& image);
         const QImage& getImage() const { return image_; }
 
-        void setParameters(const std::array<GLfloat, 6>& parameters)
+        void setParameters(const std::array<GLfloat, NUM_PARAMETERS>& parameters)
         {
             parameters_ = parameters;
         }
 
         template <typename T>
-        void setParameters(const std::array<T, 6>& parameters)
+        void setParameters(const std::array<T, NUM_PARAMETERS>& parameters)
         {
-            for (int i = 0; i < 6; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
+            for (int i = 0; i < NUM_PARAMETERS; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
         }
 
         template <typename T>
         void setParameters(const std::vector<T>& parameters)
         {
-            assert(parameters.size() == 6);
-            for (int i = 0; i < 6; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
+            assert(parameters.size() == NUM_PARAMETERS);
+            for (int i = 0; i < NUM_PARAMETERS; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
         }
 
         template <typename T>
         void setParameters(const T parameters[])
         {
-            for (int i = 0; i < 6; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
+            for (int i = 0; i < NUM_PARAMETERS; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
         }
 
     protected:
@@ -57,7 +58,7 @@ namespace enhancer
         QImage image_;
         bool dirty_;
 
-        std::array<GLfloat, 6> parameters_;
+        std::array<GLfloat, NUM_PARAMETERS> parameters_;
 
         std::shared_ptr<QOpenGLShaderProgram> program_;
         std::shared_ptr<QOpenGLTexture> texture_;
