@@ -13,12 +13,12 @@ uniform float parameters[5];
 #ifndef ORIGINAL_6D_VERSION
 // Y'UV (BT.709) to linear RGB
 // Values are from https://en.wikipedia.org/wiki/YUV
-vec3 yuv2rgb(vec3 yiq)
+vec3 yuv2rgb(vec3 yuv)
 {
     const mat3 m = mat3(+1.00000, +1.00000, +1.00000,  // 1st column
                         +0.00000, -0.21482, +2.12798,  // 2nd column
                         +1.28033, -0.38059, +0.00000); // 3rd column
-    return m * yiq;
+    return m * yuv;
 }
 
 // Linear RGB to Y'UV (BT.709)
