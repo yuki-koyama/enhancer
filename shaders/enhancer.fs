@@ -193,10 +193,10 @@ void main()
     vec4 color = texture(texture_sampler, vertex_uv);
 
     // Retrieve enhancement parameters
-    float brightness    = parameters[0] - 0.5;
-    float contrast      = parameters[1] - 0.5;
-    float saturation    = parameters[2] - 0.5;
-    vec3  color_balance = vec3(parameters[3], parameters[4], parameters[5]) - vec3(0.5);
+    float brightness   = parameters[0] - 0.5;
+    float contrast     = parameters[1] - 0.5;
+    float saturation   = parameters[2] - 0.5;
+    vec3  balance      = vec3(parameters[3], parameters[4], parameters[5]) - vec3(0.5);
 
     // Apply color balance
     color.xyz = changeColorBalance(color.xyz, color_balance);
