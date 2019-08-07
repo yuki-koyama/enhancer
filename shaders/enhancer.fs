@@ -3,7 +3,34 @@
 smooth in vec2 vertex_uv;
 out vec4 frag_color;
 uniform sampler2D texture_sampler;
+
+#ifdef ORIGINAL_6D_VERSION
 uniform float parameters[6];
+#else
+uniform float parameters[5];
+#endif
+
+#ifndef ORIGINAL_6D_VERSION
+// Y'UV (BT.709) to linear RGB
+// Values are from https://en.wikipedia.org/wiki/YUV
+vec3 yuv2rgb(vec3 yiq)
+{
+    const mat3 m = mat3(+1.00000, +1.00000, +1.00000,  // 1st column
+                        +0.00000, -0.21482, +2.12798,  // 2nd column
+                        +1.28033, -0.38059, +0.00000); // 3rd column
+    return m * yiq;
+}
+
+// Linear RGB to Y'UV (BT.709)
+// Values are from https://en.wikipedia.org/wiki/YUV
+vec3 rgb2yuv(vec3 rgb)
+{
+    const mat3 m = mat3(+0.21260, -0.09991, +0.61500,  // 1st column
+                        +0.71520, -0.33609, -0.55861,  // 2nd column
+                        +0.07220, +0.43600, -0.05639); // 3rd column
+    return m * rgb;
+}
+#endif
 
 float rgb2h(vec3 rgb)
 {
@@ -121,6 +148,7 @@ vec3 hsl2rgb(vec3 hsl)
     return rgb;
 }
 
+#ifdef ORIGINAL_6D_VERSION
 vec3 changeColorBalance(vec3 rgb, vec3 param)
 {
     float lightness = rgb2L(rgb);
@@ -138,6 +166,7 @@ vec3 changeColorBalance(vec3 rgb, vec3 param)
     vec3 newHsl = rgb2hsl(newColor);
     return hsl2rgb(vec3(newHsl.x, newHsl.y, lightness));
 }
+#endif
 
 vec3 rgb2hsv(vec3 rgb)
 {
@@ -196,10 +225,20 @@ void main()
     float brightness   = parameters[0] - 0.5;
     float contrast     = parameters[1] - 0.5;
     float saturation   = parameters[2] - 0.5;
+#ifdef ORIGINAL_6D_VERSION
     vec3  balance      = vec3(parameters[3], parameters[4], parameters[5]) - vec3(0.5);
+#else
+    float temperature  = parameters[3] - 0.5;
+    float tint         = parameters[4] - 0.5;
+#endif
 
+#ifdef ORIGINAL_6D_VERSION
     // Apply color balance
-    color.xyz = changeColorBalance(color.xyz, color_balance);
+    color.xyz = changeColorBalance(color.xyz, balance);
+#else
+    // Apply approximate temperature/tint effect
+    color.xyz = yuv2rgb(rgb2yuv(color.xyz) + temperature * 0.2 * vec3(0.0, -1.0, 1.0) + tint * 0.2 * vec3(0.0, 1.0, 1.0));
+#endif
 
     // Apply brightness
     color.xyz *= 1.0 + brightness;
