@@ -18,5 +18,6 @@ int main(int argc, char** argv)
     widget.setImage(QImage("://test-images/DSC03039.JPG"));
     widget.setParameters({ 0.6, 0.4, 0.6, 0.6, 0.5, 0.5 });
     widget.show();
+
     return app.exec();
 }

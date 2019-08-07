@@ -56,15 +56,15 @@ namespace enhancer
 
     private:
         QImage image_;
-        bool dirty_;
+        bool   dirty_;
 
         std::array<GLfloat, NUM_PARAMETERS> parameters_;
 
         std::shared_ptr<QOpenGLShaderProgram> program_;
-        std::shared_ptr<QOpenGLTexture> texture_;
+        std::shared_ptr<QOpenGLTexture>       texture_;
 
         QOpenGLVertexArrayObject vao;
-        QOpenGLBuffer vbo;
+        QOpenGLBuffer            vbo;
     };
 }
 
