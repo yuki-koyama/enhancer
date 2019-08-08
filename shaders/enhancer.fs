@@ -4,13 +4,12 @@ smooth in vec2 vertex_uv;
 out vec4 frag_color;
 uniform sampler2D texture_sampler;
 
-#ifdef ORIGINAL_6D_VERSION
+#ifdef ENHANCER_V_1_0
 uniform float parameters[6];
 #else
 uniform float parameters[5];
 #endif
 
-#ifndef ORIGINAL_6D_VERSION
 // Y'UV (BT.709) to linear RGB
 // Values are from https://en.wikipedia.org/wiki/YUV
 vec3 yuv2rgb(vec3 yuv)
@@ -30,7 +29,6 @@ vec3 rgb2yuv(vec3 rgb)
                         +0.07220, +0.43600, -0.05639); // 3rd column
     return m * rgb;
 }
-#endif
 
 float rgb2h(vec3 rgb)
 {
@@ -148,7 +146,6 @@ vec3 hsl2rgb(vec3 hsl)
     return rgb;
 }
 
-#ifdef ORIGINAL_6D_VERSION
 vec3 changeColorBalance(vec3 rgb, vec3 param)
 {
     float lightness = rgb2L(rgb);
@@ -166,7 +163,6 @@ vec3 changeColorBalance(vec3 rgb, vec3 param)
     vec3 newHsl = rgb2hsl(newColor);
     return hsl2rgb(vec3(newHsl.x, newHsl.y, lightness));
 }
-#endif
 
 vec3 rgb2hsv(vec3 rgb)
 {
@@ -216,48 +212,85 @@ vec3 hsv2rgb(vec3 hsv) {
     return rgb;
 }
 
-void main()
+vec3 enhance(vec3 color)
 {
-    // Get raw texture color
-    vec4 color = texture(texture_sampler, vertex_uv);
-
     // Retrieve enhancement parameters
     float brightness   = parameters[0] - 0.5;
     float contrast     = parameters[1] - 0.5;
     float saturation   = parameters[2] - 0.5;
-#ifdef ORIGINAL_6D_VERSION
-    vec3  balance      = vec3(parameters[3], parameters[4], parameters[5]) - vec3(0.5);
-#else
     float temperature  = parameters[3] - 0.5;
     float tint         = parameters[4] - 0.5;
-#endif
 
-#ifdef ORIGINAL_6D_VERSION
-    // Apply color balance
-    color.xyz = changeColorBalance(color.xyz, balance);
-#else
     // Apply approximate temperature/tint effect
-    color.xyz = yuv2rgb(rgb2yuv(color.xyz) + temperature * 0.2 * vec3(0.0, -1.0, 1.0) + tint * 0.2 * vec3(0.0, 1.0, 1.0));
-#endif
+    color = yuv2rgb(rgb2yuv(color) + temperature * 0.2 * vec3(0.0, -1.0, 1.0) + tint * 0.2 * vec3(0.0, 1.0, 1.0));
 
     // Apply brightness
-    color.xyz *= 1.0 + brightness;
+    color *= 1.0 + brightness;
 
     // Apply contrast
     float cont = tan((contrast + 1.0) * 3.1415926535 * 0.25);
-    color.xyz = (color.xyz - vec3(0.5)) * cont + vec3(0.5);
+    color = (color - vec3(0.5)) * cont + vec3(0.5);
 
     // Clamp the values
     color = clamp(color, 0.0, 1.0);
 
     // Apply saturation
-    vec3 hsv_color = rgb2hsv(color.xyz);
+    vec3 hsv_color = rgb2hsv(color);
     float s = hsv_color[1];
     s *= saturation + 1.0;
     s = clamp(s, 0.0, 1.0);
     hsv_color[1] = s;
-    color.xyz = hsv2rgb(hsv_color);
+    color = hsv2rgb(hsv_color);
 
     // Output the resulting color
-    frag_color = color;
+    return color;
+}
+
+#ifdef ENHANCER_V_1_0
+vec3 enhance_v1(vec3 color)
+{
+    // Retrieve enhancement parameters
+    float brightness   = parameters[0] - 0.5;
+    float contrast     = parameters[1] - 0.5;
+    float saturation   = parameters[2] - 0.5;
+    vec3  balance      = vec3(parameters[3], parameters[4], parameters[5]) - vec3(0.5);
+
+    // Apply color balance
+    color = changeColorBalance(color, balance);
+
+    // Apply brightness
+    color *= 1.0 + brightness;
+
+    // Apply contrast
+    float cont = tan((contrast + 1.0) * 3.1415926535 * 0.25);
+    color = (color - vec3(0.5)) * cont + vec3(0.5);
+
+    // Clamp the values
+    color = clamp(color, 0.0, 1.0);
+
+    // Apply saturation
+    vec3 hsv_color = rgb2hsv(color);
+    float s = hsv_color[1];
+    s *= saturation + 1.0;
+    s = clamp(s, 0.0, 1.0);
+    hsv_color[1] = s;
+    color = hsv2rgb(hsv_color);
+
+    // Output the resulting color
+    return color;
+}
+#endif
+
+void main()
+{
+    // Get raw texture color
+    vec4 color = texture(texture_sampler, vertex_uv);
+
+    // Enhance
+#ifdef ENHANCER_V_1_0
+    frag_color.xyz = enhance_v1(color.xyz);
+#else
+    frag_color.xyz = enhance(color.xyz);
+#endif
+    frag_color.w   = 1.0;
 }

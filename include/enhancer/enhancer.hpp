@@ -6,11 +6,7 @@
 
 namespace enhancer
 {
-#ifdef ORIGINAL_6D_VERSION
-    constexpr int NUM_PARAMETERS = 6;
-#else
     constexpr int NUM_PARAMETERS = 5;
-#endif
 
     ///////////////////////////////////////////////////////////
     // Interface
@@ -24,7 +20,6 @@ namespace enhancer
 
     namespace internal
     {
-#ifndef ORIGINAL_6D_VERSION
         // Y'UV (BT.709) to linear RGB
         // Values are from https://en.wikipedia.org/wiki/YUV
         inline Eigen::Vector3d yuv2rgb(const Eigen::Vector3d& yuv)
@@ -44,7 +39,6 @@ namespace enhancer
                                       +0.07220, +0.43600, -0.05639 }; // 3rd column
             return Eigen::Map<const Eigen::Matrix3d>(m) * rgb;
         }
-#endif
 
         inline double rgb2h(const Eigen::Vector3d& rgb)
         {
@@ -196,7 +190,6 @@ namespace enhancer
         inline float clamp(const float value) { return std::max(0.0, std::min(static_cast<double>(value), 1.0)); }
         inline Eigen::Vector3d clamp(const Eigen::Vector3d& v) { return Eigen::Vector3d(clamp(v.x()), clamp(v.y()), clamp(v.z())); }
 
-#ifdef ORIGINAL_6D_VERSION
         inline Eigen::Vector3d changeColorBalance(const Eigen::Vector3d& inputRgb, const Eigen::Vector3d& shift)
         {
             const double a     = 0.250;
@@ -210,49 +203,76 @@ namespace enhancer
 
             return hsl2rgb(Eigen::Vector3d(newHsl(0), newHsl(1), lightness));
         }
-#endif
+
+        inline Eigen::Vector3d enhance(const Eigen::Vector3d& input_rgb, const Eigen::VectorXd& parameters)
+        {
+            assert(parameters.size() == NUM_PARAMETERS);
+
+            const double brightness  = parameters[0] - 0.5;
+            const double contrast    = parameters[1] - 0.5;
+            const double saturation  = parameters[2] - 0.5;
+            const double temperature = parameters[3] - 0.5;
+            const double tint        = parameters[4] - 0.5;
+
+            // Apply approximate temperature/tint effect
+            Eigen::Vector3d rgb = yuv2rgb(rgb2yuv(input_rgb) + temperature * 0.2 * Eigen::Vector3d(0.0, -1.0, 1.0) + tint * 0.2 * Eigen::Vector3d(0.0, 1.0, 1.0));
+
+            // brightness
+            rgb *= 1.0 + brightness;
+
+            // contrast
+            const double contrast_coef = std::tan((contrast + 1.0) * M_PI_4);
+            rgb = contrast_coef * (rgb - Eigen::Vector3d::Constant(0.5)) + Eigen::Vector3d::Constant(0.5);
+
+            // clamp
+            rgb = clamp(rgb);
+
+            // saturation
+            Eigen::Vector3d hsv = rgb2hsv(rgb);
+            double s = hsv.y();
+            s *= saturation + 1.0;
+            hsv(1) = clamp(s);
+            const Eigen::Vector3d output_rgb = hsv2rgb(hsv);
+
+            return output_rgb;
+        }
+
+        inline Eigen::Vector3d enhance_v1(const Eigen::Vector3d& input_rgb, const Eigen::VectorXd& parameters)
+        {
+            assert(parameters.size() == NUM_PARAMETERS);
+
+            const double          brightness  = parameters[0] - 0.5;
+            const double          contrast    = parameters[1] - 0.5;
+            const double          saturation  = parameters[2] - 0.5;
+            const Eigen::Vector3d balance     = parameters.segment<3>(3) - Eigen::Vector3d::Constant(0.5);
+
+            // color balance
+            Eigen::Vector3d rgb = changeColorBalance(input_rgb, balance);
+
+            // brightness
+            rgb *= 1.0 + brightness;
+
+            // contrast
+            const double contrast_coef = std::tan((contrast + 1.0) * M_PI_4);
+            rgb = contrast_coef * (rgb - Eigen::Vector3d::Constant(0.5)) + Eigen::Vector3d::Constant(0.5);
+
+            // clamp
+            rgb = clamp(rgb);
+
+            // saturation
+            Eigen::Vector3d hsv = rgb2hsv(rgb);
+            double s = hsv.y();
+            s *= saturation + 1.0;
+            hsv(1) = clamp(s);
+            const Eigen::Vector3d output_rgb = hsv2rgb(hsv);
+
+            return output_rgb;
+        }
     }
 
     inline Eigen::Vector3d enhance(const Eigen::Vector3d& input_rgb, const Eigen::VectorXd& parameters)
     {
-        assert(parameters.size() == NUM_PARAMETERS);
-
-        const double          brightness  = parameters[0] - 0.5;
-        const double          contrast    = parameters[1] - 0.5;
-        const double          saturation  = parameters[2] - 0.5;
-#ifdef ORIGINAL_6D_VERSION
-        const Eigen::Vector3d balance     = parameters.segment<3>(3) - Eigen::Vector3d::Constant(0.5);
-#else
-        const double          temperature = parameters[3] - 0.5;
-        const double          tint        = parameters[4] - 0.5;
-#endif
-
-#ifdef ORIGINAL_6D_VERSION
-        // color balance
-        Eigen::Vector3d rgb = internal::changeColorBalance(input_rgb, balance);
-#else
-        // Apply approximate temperature/tint effect
-        Eigen::Vector3d rgb = internal::yuv2rgb(internal::rgb2yuv(input_rgb) + temperature * 0.2 * Eigen::Vector3d(0.0, -1.0, 1.0) + tint * 0.2 * Eigen::Vector3d(0.0, 1.0, 1.0));
-#endif
-
-        // brightness
-        rgb *= 1.0 + brightness;
-
-        // contrast
-        const double contrast_coef = std::tan((contrast + 1.0) * M_PI_4);
-        rgb = contrast_coef * (rgb - Eigen::Vector3d::Constant(0.5)) + Eigen::Vector3d::Constant(0.5);
-
-        // clamp
-        rgb = internal::clamp(rgb);
-
-        // saturation
-        Eigen::Vector3d hsv = internal::rgb2hsv(rgb);
-        double s = hsv.y();
-        s *= saturation + 1.0;
-        hsv(1) = internal::clamp(s);
-        const Eigen::Vector3d output_rgb = internal::hsv2rgb(hsv);
-
-        return output_rgb;
+        return internal::enhance(input_rgb, parameters);
     }
 }
 
