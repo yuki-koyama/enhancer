@@ -40,6 +40,7 @@ if(ENHANCER_USE_QT_FEATURES)
 
   if(ENHANCER_BUILD_QT_TESTS)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests/simple-widget-test)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests/cpp-export-test)
   endif()
 else()
   set(headers ${CMAKE_CURRENT_SOURCE_DIR}/include/enhancer/enhancer.hpp)
