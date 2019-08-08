@@ -10,6 +10,16 @@ uniform float parameters[6];
 uniform float parameters[5];
 #endif
 
+vec3 convertRgbToLinearRgb(const vec3 rgb)
+{
+    return pow(rgb, vec3(2.2));
+}
+
+vec3 convertLinearRgbToRgb(const vec3 linear_rgb)
+{
+    return pow(linear_rgb, vec3(1.0 / 2.2));
+}
+
 // Y'UV (BT.709) to linear RGB
 // Values are from https://en.wikipedia.org/wiki/YUV
 vec3 yuv2rgb(vec3 yuv)
@@ -212,6 +222,32 @@ vec3 hsv2rgb(vec3 hsv) {
     return rgb;
 }
 
+vec3 applyTemperatureTintEffect(const vec3 linear_rgb, const float temperature, const float tint)
+{
+    const float scale = 0.10;
+    return clamp(yuv2rgb(rgb2yuv(linear_rgb) + temperature * scale * vec3(0.0, -1.0, 1.0) + tint * scale * vec3(0.0, 1.0, 1.0)), 0.0, 1.0);
+}
+
+vec3 applyBrightnessEffect(const vec3 linear_rgb, const float brightness)
+{
+    const float scale = 1.5;
+    return pow(linear_rgb, vec3(1.0 / (1.0 + scale * brightness)));
+}
+
+vec3 applySaturationEffect(const vec3 linear_rgb, const float saturation)
+{
+    vec3 hsv = rgb2hsv(clamp(linear_rgb, 0.0, 1.0));
+    float s = clamp(hsv[1] * (saturation + 1.0), 0.0, 1.0);
+    return hsv2rgb(vec3(hsv[0], s, hsv[2]));
+}
+
+vec3 applyContrastEffect(const vec3 linear_rgb, const float contrast)
+{
+    const float pi_4 = 3.14159265358979 * 0.25;
+    float contrast_coef = tan((contrast + 1.0) * pi_4);
+    return convertRgbToLinearRgb(max(contrast_coef * (convertLinearRgbToRgb(linear_rgb) - vec3(0.5)) + vec3(0.5), 0.0));
+}
+
 vec3 enhance(vec3 color)
 {
     // Retrieve enhancement parameters
@@ -221,29 +257,21 @@ vec3 enhance(vec3 color)
     float temperature  = parameters[3] - 0.5;
     float tint         = parameters[4] - 0.5;
 
-    // Apply approximate temperature/tint effect
-    color = yuv2rgb(rgb2yuv(color) + temperature * 0.2 * vec3(0.0, -1.0, 1.0) + tint * 0.2 * vec3(0.0, 1.0, 1.0));
+    vec3 linear_rgb = convertRgbToLinearRgb(color);
 
-    // Apply brightness
-    color *= 1.0 + brightness;
+    // Approximate temperature/tint effect
+    linear_rgb = applyTemperatureTintEffect(linear_rgb, temperature, tint);
 
-    // Apply contrast
-    float cont = tan((contrast + 1.0) * 3.1415926535 * 0.25);
-    color = (color - vec3(0.5)) * cont + vec3(0.5);
+    // Brightness
+    linear_rgb = applyBrightnessEffect(linear_rgb, brightness);
 
-    // Clamp the values
-    color = clamp(color, 0.0, 1.0);
+    // Contrast
+    linear_rgb = applyContrastEffect(linear_rgb, contrast);
 
-    // Apply saturation
-    vec3 hsv_color = rgb2hsv(color);
-    float s = hsv_color[1];
-    s *= saturation + 1.0;
-    s = clamp(s, 0.0, 1.0);
-    hsv_color[1] = s;
-    color = hsv2rgb(hsv_color);
+    // Saturation
+    linear_rgb = applySaturationEffect(linear_rgb, saturation);
 
-    // Output the resulting color
-    return color;
+    return clamp(convertLinearRgbToRgb(linear_rgb), 0.0, 1.0);
 }
 
 #ifdef ENHANCER_V_1_0
