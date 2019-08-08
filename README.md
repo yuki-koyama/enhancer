@@ -15,6 +15,23 @@ This repository contains the following three features:
 - Temperature
 - Tint
 
+### Examples
+
+Brightness
+![Brightness](./docs/p0.jpg)
+
+Contrast
+![Contrast](./docs/p1.jpg)
+
+Saturation
+![Saturation](./docs/p2.jpg)
+
+Temperature
+![Temperature](./docs/p3.jpg)
+
+Tint
+![Tint](./docs/p4.jpg)
+
 ## Required Runtime Environments
 
 - GLSL 3.3
