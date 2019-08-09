@@ -1,5 +1,8 @@
 # enhancer
 
+[![Build Status](https://travis-ci.com/yuki-koyama/enhancer.svg?branch=master)](https://travis-ci.com/yuki-koyama/enhancer)
+![GitHub](https://img.shields.io/github/license/yuki-koyama/enhancer)
+
 A C++11 / GLSL library for enhancing photographs (adjusting brightness, contrast, etc.).
 
 This repository contains the following three features:
@@ -9,11 +12,42 @@ This repository contains the following three features:
 
 ## Supported Parameters
 
-- Brightness
-- Contrast
-- Saturation
-- Temperature
-- Tint
+### Default Set
+
+- __Brightness__:
+  - Apply a gamma curve in the `RGB` space
+- __Contrast__:
+  - Apply an S curve in the (gamma-corrected) `RGB` space
+- __Saturation__:
+  - Scale the saturation
+- __Temperature__:
+  - Add an offset toward the `-U+V` direction in the `Y'UV` space
+- __Tint__:
+  - Add an offset toward the `+U+V` direction in the `Y'UV` space
+
+### Optional
+
+- __Lift/Gamma/Gain__ (9D)
+  - Reproduce common effects used in many color grading software packages
+- __Color Balance__ (3D)
+  - Adjust the `RGB` values while preserving the lightness
+
+### Examples
+
+Brightness
+![Brightness](./docs/p0.jpg)
+
+Contrast
+![Contrast](./docs/p1.jpg)
+
+Saturation
+![Saturation](./docs/p2.jpg)
+
+Temperature
+![Temperature](./docs/p3.jpg)
+
+Tint
+![Tint](./docs/p4.jpg)
 
 ## Required Runtime Environments
 
