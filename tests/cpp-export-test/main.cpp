@@ -43,19 +43,20 @@ QImage enhanceQImage(const QImage& target_image, const Eigen::VectorXd& paramete
 
 int main(int argc, char** argv)
 {
-    constexpr int num_steps = 5;
+    constexpr int num_steps    = 5;
+    constexpr int target_width = 960;
 
     Q_INIT_RESOURCE(enhancer_resources);
-    const QImage target_image("://test-images/DSC03039.JPG");
+    const QImage target_image = QImage("://test-images/DSC03039.JPG").scaledToWidth(target_width);
 
-    for (int dim = 0; dim < 5; ++ dim)
+    for (int dim = 0; dim < enhancer::NUM_PARAMETERS; ++ dim)
     {
         for (int step = 0; step < num_steps; ++ step)
         {
-            double parameters_data[5] = { 0.5, 0.5, 0.5, 0.5, 0.5 };
+            std::vector<double> parameters_data(enhancer::NUM_PARAMETERS, 0.5);
             parameters_data[dim] = static_cast<double>(step) / static_cast<double>(num_steps - 1);
 
-            const Eigen::VectorXd parameters     = Eigen::Map<const Eigen::VectorXd>(parameters_data, 5);
+            const Eigen::VectorXd parameters     = Eigen::Map<const Eigen::VectorXd>(parameters_data.data(), enhancer::NUM_PARAMETERS);
             const QImage          enhanced_image = enhanceQImage(target_image, parameters);
             const std::string     path           = "./" + convertParametersToString(parameters) + ".png";
 

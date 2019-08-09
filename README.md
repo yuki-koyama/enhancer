@@ -9,11 +9,25 @@ This repository contains the following three features:
 
 ## Supported Parameters
 
-- Brightness
-- Contrast
-- Saturation
-- Temperature
-- Tint
+### Default Set
+
+- __Brightness__:
+  - Apply a gamma curve in the `RGB` space
+- __Contrast__:
+  - Apply an S curve in the (gamma-corrected) `RGB` space
+- __Saturation__:
+  - Scale the saturation
+- __Temperature__:
+  - Add an offset toward the `-U+V` direction in the `Y'UV` space
+- __Tint__:
+  - Add an offset toward the `+U+V` direction in the `Y'UV` space
+
+### Optional
+
+- __Lift/Gamma/Gain__ (9D)
+  - Reproduce common effects used in many color grading software packages
+- __Color Balance__ (3D)
+  - Adjust the `RGB` values while preserving the lightness
 
 ### Examples
 

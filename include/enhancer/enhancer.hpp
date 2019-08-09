@@ -6,7 +6,11 @@
 
 namespace enhancer
 {
+#if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
+    constexpr int NUM_PARAMETERS = 14;
+#else
     constexpr int NUM_PARAMETERS = 5;
+#endif
 
     ///////////////////////////////////////////////////////////
     // Interface
@@ -215,6 +219,18 @@ namespace enhancer
             return hsl2rgb(Eigen::Vector3d(newHsl(0), newHsl(1), lightness));
         }
 
+        inline Eigen::Vector3d applyLiftGammaGainEffect(const Eigen::Vector3d& linear_rgb,
+                                                        const Eigen::Vector3d& lift,
+                                                        const Eigen::Vector3d& gamma,
+                                                        const Eigen::Vector3d& gain)
+        {
+            const Eigen::Array3d lift_applied_linear_rgb  = ((linear_rgb.array() - Eigen::Array3d::Ones()) * (Eigen::Array3d::Constant(2.0) - lift.array()) + Eigen::Array3d::Ones()).max(0.0);
+            const Eigen::Array3d gain_applied_linear_rgb  = lift_applied_linear_rgb * gain.array();
+            const Eigen::Array3d gamma_applied_linear_rgb = gain_applied_linear_rgb.pow(gamma.array().max(1e-06).inverse());
+
+            return gamma_applied_linear_rgb.matrix();
+        }
+
         inline Eigen::Vector3d applyTemperatureTintEffect(const Eigen::Vector3d& linear_rgb, const double temperature, const double tint)
         {
             constexpr double scale = 0.10;
@@ -256,7 +272,18 @@ namespace enhancer
             const double temperature = parameters[3] - 0.5;
             const double tint        = parameters[4] - 0.5;
 
+#if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
+            const Eigen::Vector3d lift  = Eigen::Vector3d::Constant(0.5) + parameters.segment<3>(5); // [0.5, 1.5]^3
+            const Eigen::Vector3d gamma = 2.0 * parameters.segment<3>(8);  // [0, 2]^3
+            const Eigen::Vector3d gain  = 2.0 * parameters.segment<3>(11); // [0, 2]^3
+#endif
+
             Eigen::Vector3d linear_rgb = convertRgbToLinearRgb(input_rgb);
+
+#if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
+            // Lift/Gamma/Gain
+            linear_rgb = applyLiftGammaGainEffect(linear_rgb, lift, gamma, gain);
+#endif
 
             // Approximate temperature/tint effect
             linear_rgb = applyTemperatureTintEffect(linear_rgb, temperature, tint);

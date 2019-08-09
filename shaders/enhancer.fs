@@ -4,8 +4,10 @@ smooth in vec2 vertex_uv;
 out vec4 frag_color;
 uniform sampler2D texture_sampler;
 
-#ifdef ENHANCER_V_1_0
+#if defined(ENHANCER_V_1_0)
 uniform float parameters[6];
+#elif defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
+uniform float parameters[14];
 #else
 uniform float parameters[5];
 #endif
@@ -222,6 +224,15 @@ vec3 hsv2rgb(vec3 hsv) {
     return rgb;
 }
 
+vec3 applyLiftGammaGainEffect(const vec3 linear_rgb, const vec3 lift, const vec3 gamma, const vec3 gain)
+{
+    vec3 lift_applied_linear_rgb  = clamp((linear_rgb - vec3(1.0)) * (vec3(2.0) - lift) + vec3(1.0), 0.0, 1.0);
+    vec3 gain_applied_linear_rgb  = lift_applied_linear_rgb * gain;
+    vec3 gamma_applied_linear_rgb = pow(gain_applied_linear_rgb, vec3(1.0) / clamp(gamma, 1e-06, 2.0));
+
+    return gamma_applied_linear_rgb;
+}
+
 vec3 applyTemperatureTintEffect(const vec3 linear_rgb, const float temperature, const float tint)
 {
     const float scale = 0.10;
@@ -257,7 +268,18 @@ vec3 enhance(vec3 color)
     float temperature  = parameters[3] - 0.5;
     float tint         = parameters[4] - 0.5;
 
+#if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
+    vec3 lift  = vec3(0.5) + vec3(parameters[5], parameters[6], parameters[7]); // [0.5, 1.5]^3
+    vec3 gamma = 2.0 * vec3(parameters[8], parameters[9], parameters[10]);      // [0, 2]^3
+    vec3 gain  = 2.0 * vec3(parameters[11], parameters[12], parameters[13]);    // [0, 2]^3
+#endif
+
     vec3 linear_rgb = convertRgbToLinearRgb(color);
+
+#if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
+    // Lift/Gamma/Gain
+    linear_rgb = applyLiftGammaGainEffect(linear_rgb, lift, gamma, gain);
+#endif
 
     // Approximate temperature/tint effect
     linear_rgb = applyTemperatureTintEffect(linear_rgb, temperature, tint);
