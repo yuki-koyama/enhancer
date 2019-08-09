@@ -1,5 +1,8 @@
 # enhancer
 
+[![Build Status](https://travis-ci.com/yuki-koyama/enhancer.svg?branch=master)](https://travis-ci.com/yuki-koyama/enhancer)
+![GitHub](https://img.shields.io/github/license/yuki-koyama/enhancer)
+
 A C++11 / GLSL library for enhancing photographs (adjusting brightness, contrast, etc.).
 
 This repository contains the following three features:
