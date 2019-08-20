@@ -9,27 +9,27 @@ namespace enhancer
 {
     EnhancerWidget::EnhancerWidget(QWidget* parent) :
     QOpenGLWidget(parent),
-    dirty_(true)
+    m_dirty(true)
     {
-        image_ = QImage(64, 64, QImage::Format_RGBA8888);
-        image_.fill(Qt::GlobalColor::darkGray);
+        m_image = QImage(64, 64, QImage::Format_RGBA8888);
+        m_image.fill(Qt::GlobalColor::darkGray);
 
-        parameters_.fill(0.5);
+        m_parameters.fill(0.5);
     }
 
     EnhancerWidget::~EnhancerWidget()
     {
         makeCurrent();
-        vbo.destroy();
-        vao.destroy();
-        texture_->destroy();
+        m_vbo.destroy();
+        m_vao.destroy();
+        m_texture->destroy();
         doneCurrent();
     }
 
     void EnhancerWidget::setImage(const QImage& image)
     {
-        image_ = image;
-        dirty_ = true;
+        m_image = image;
+        m_dirty = true;
     }
 
     void EnhancerWidget::initializeGL()
@@ -47,11 +47,11 @@ namespace enhancer
         std::cout << "OpenGL Version: " << opengl_version << std::endl;
         std::cout << "GLSL Version: " << glsl_version << std::endl;
 
-        vao.create();
-        vbo.create();
+        m_vao.create();
+        m_vbo.create();
 
-        vao.bind();
-        vbo.bind();
+        m_vao.bind();
+        m_vbo.bind();
         {
             constexpr GLfloat vertex_data[] =
             {
@@ -60,10 +60,10 @@ namespace enhancer
                 +1.0, +1.0,
                 -1.0, +1.0,
             };
-            vbo.allocate(vertex_data, sizeof(vertex_data) * sizeof(GLfloat));
+            m_vbo.allocate(vertex_data, sizeof(vertex_data) * sizeof(GLfloat));
         }
-        vbo.release();
-        vao.release();
+        m_vbo.release();
+        m_vao.release();
 
         QOpenGLShader *vertex_shader = new QOpenGLShader(QOpenGLShader::Vertex, this);
         vertex_shader->compileSourceFile("://shaders/enhancer.vs");
@@ -71,16 +71,16 @@ namespace enhancer
         QOpenGLShader *fragment_shader = new QOpenGLShader(QOpenGLShader::Fragment, this);
         fragment_shader->compileSourceFile("://shaders/enhancer.fs");
 
-        program_ = std::make_shared<QOpenGLShaderProgram>();
-        program_->addShader(vertex_shader);
-        program_->addShader(fragment_shader);
-        program_->link();
+        m_program = std::make_shared<QOpenGLShaderProgram>();
+        m_program->addShader(vertex_shader);
+        m_program->addShader(fragment_shader);
+        m_program->link();
 
-        program_->bind();
+        m_program->bind();
         {
-            program_->setUniformValue("texture_sampler", TEXTURE_UNIT_ID);
+            m_program->setUniformValue("texture_sampler", TEXTURE_UNIT_ID);
         }
-        program_->release();
+        m_program->release();
     }
 
     void EnhancerWidget::paintGL()
@@ -88,8 +88,8 @@ namespace enhancer
         glClearColor(0.0, 0.0, 0.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        const int image_width = this->image_.width();
-        const int image_height = this->image_.height();
+        const int image_width = this->m_image.width();
+        const int image_height = this->m_image.height();
         const int w = width() * devicePixelRatio();
         const int h = height() * devicePixelRatio();
         if (w * image_height == h * image_width)
@@ -107,29 +107,29 @@ namespace enhancer
             glViewport(0, (h - h_corrected) / 2, w, h_corrected);
         }
 
-        if (dirty_)
+        if (m_dirty)
         {
-            texture_ = std::make_shared<QOpenGLTexture>(image_.mirrored(), QOpenGLTexture::DontGenerateMipMaps);
-            dirty_ = false;
+            m_texture = std::make_shared<QOpenGLTexture>(m_image.mirrored(), QOpenGLTexture::DontGenerateMipMaps);
+            m_dirty = false;
         }
 
-        program_->bind();
-        vao.bind();
-        vbo.bind();
-        texture_->bind(TEXTURE_UNIT_ID);
+        m_program->bind();
+        m_vao.bind();
+        m_vbo.bind();
+        m_texture->bind(TEXTURE_UNIT_ID);
         {
-            program_->enableAttributeArray("vertex_position");
-            program_->setAttributeBuffer("vertex_position", GL_FLOAT, 0, 2, 2 * sizeof(GLfloat));
+            m_program->enableAttributeArray("vertex_position");
+            m_program->setAttributeBuffer("vertex_position", GL_FLOAT, 0, 2, 2 * sizeof(GLfloat));
 
-            program_->setUniformValueArray("parameters", parameters_.data(), NUM_PARAMETERS, 1);
+            m_program->setUniformValueArray("parameters", m_parameters.data(), NUM_PARAMETERS, 1);
 
             glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-            program_->disableAttributeArray("vertex_position");
+            m_program->disableAttributeArray("vertex_position");
         }
-        texture_->release();
-        vbo.release();
-        vao.release();
-        program_->release();
+        m_texture->release();
+        m_vbo.release();
+        m_vao.release();
+        m_program->release();
     }
 
     void EnhancerWidget::resizeGL(int width, int height)

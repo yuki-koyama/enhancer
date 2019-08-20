@@ -23,30 +23,30 @@ namespace enhancer
         ~EnhancerWidget();
 
         void setImage(const QImage& image);
-        const QImage& getImage() const { return image_; }
+        const QImage& getImage() const { return m_image; }
 
         void setParameters(const std::array<GLfloat, NUM_PARAMETERS>& parameters)
         {
-            parameters_ = parameters;
+            m_parameters = parameters;
         }
 
         template <typename T>
         void setParameters(const std::array<T, NUM_PARAMETERS>& parameters)
         {
-            for (int i = 0; i < NUM_PARAMETERS; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
+            for (int i = 0; i < NUM_PARAMETERS; ++ i) { m_parameters[i] = static_cast<GLfloat>(parameters[i]); }
         }
 
         template <typename T>
         void setParameters(const std::vector<T>& parameters)
         {
             assert(parameters.size() == NUM_PARAMETERS);
-            for (int i = 0; i < NUM_PARAMETERS; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
+            for (int i = 0; i < NUM_PARAMETERS; ++ i) { m_parameters[i] = static_cast<GLfloat>(parameters[i]); }
         }
 
         template <typename T>
         void setParameters(const T parameters[])
         {
-            for (int i = 0; i < NUM_PARAMETERS; ++ i) { parameters_[i] = static_cast<GLfloat>(parameters[i]); }
+            for (int i = 0; i < NUM_PARAMETERS; ++ i) { m_parameters[i] = static_cast<GLfloat>(parameters[i]); }
         }
 
     protected:
@@ -55,16 +55,16 @@ namespace enhancer
         void resizeGL(int width, int height) override;
 
     private:
-        QImage image_;
-        bool   dirty_;
+        QImage m_image;
+        bool   m_dirty;
 
-        std::array<GLfloat, NUM_PARAMETERS> parameters_;
+        std::array<GLfloat, NUM_PARAMETERS> m_parameters;
 
-        std::shared_ptr<QOpenGLShaderProgram> program_;
-        std::shared_ptr<QOpenGLTexture>       texture_;
+        std::shared_ptr<QOpenGLShaderProgram> m_program;
+        std::shared_ptr<QOpenGLTexture>       m_texture;
 
-        QOpenGLVertexArrayObject vao;
-        QOpenGLBuffer            vbo;
+        QOpenGLVertexArrayObject m_vao;
+        QOpenGLBuffer            m_vbo;
     };
 }
 
