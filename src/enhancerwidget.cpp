@@ -47,40 +47,36 @@ namespace enhancer
         std::cout << "OpenGL Version: " << opengl_version << std::endl;
         std::cout << "GLSL Version: " << glsl_version << std::endl;
 
-        m_vao.create();
-        m_vbo.create();
-
-        m_vao.bind();
-        m_vbo.bind();
+        constexpr GLfloat vertex_data[] =
         {
-            constexpr GLfloat vertex_data[] =
-            {
-                -1.0, -1.0,
-                +1.0, -1.0,
-                +1.0, +1.0,
-                -1.0, +1.0,
-            };
-            m_vbo.allocate(vertex_data, sizeof(vertex_data) * sizeof(GLfloat));
-        }
-        m_vbo.release();
-        m_vao.release();
-
-        QOpenGLShader *vertex_shader = new QOpenGLShader(QOpenGLShader::Vertex, this);
-        vertex_shader->compileSourceFile("://shaders/enhancer.vs");
-
-        QOpenGLShader *fragment_shader = new QOpenGLShader(QOpenGLShader::Fragment, this);
-        fragment_shader->compileSourceFile("://shaders/enhancer.fs");
+            -1.0, -1.0,
+            +1.0, -1.0,
+            +1.0, +1.0,
+            -1.0, +1.0,
+        };
 
         m_program = std::make_shared<QOpenGLShaderProgram>();
-        m_program->addShader(vertex_shader);
-        m_program->addShader(fragment_shader);
+        m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, "://shaders/enhancer.vs");
+        m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, "://shaders/enhancer.fs");
         m_program->link();
-
         m_program->bind();
-        {
-            m_program->setUniformValue("texture_sampler", TEXTURE_UNIT_ID);
-        }
+        m_program->setUniformValue("texture_sampler", TEXTURE_UNIT_ID);
         m_program->release();
+
+        m_vbo.create();
+        m_vbo.bind();
+        m_vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
+        m_vbo.allocate(vertex_data, sizeof(vertex_data) * sizeof(GLfloat));
+        m_vbo.release();
+
+        m_vao.create();
+        m_vao.bind();
+
+        m_vbo.bind();
+        m_program->enableAttributeArray("vertex_position");
+        m_program->setAttributeBuffer("vertex_position", GL_FLOAT, 0, 2, 2 * sizeof(GLfloat));
+
+        m_vao.release();
     }
 
     void EnhancerWidget::paintGL()
@@ -114,21 +110,13 @@ namespace enhancer
         }
 
         m_program->bind();
-        m_vao.bind();
-        m_vbo.bind();
+        m_program->setUniformValueArray("parameters", m_parameters.data(), NUM_PARAMETERS, 1);
+
         m_texture->bind(TEXTURE_UNIT_ID);
-        {
-            m_program->enableAttributeArray("vertex_position");
-            m_program->setAttributeBuffer("vertex_position", GL_FLOAT, 0, 2, 2 * sizeof(GLfloat));
-
-            m_program->setUniformValueArray("parameters", m_parameters.data(), NUM_PARAMETERS, 1);
-
-            glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-            m_program->disableAttributeArray("vertex_position");
-        }
-        m_texture->release();
-        m_vbo.release();
+        m_vao.bind();
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         m_vao.release();
+        m_texture->release();
         m_program->release();
     }
 
