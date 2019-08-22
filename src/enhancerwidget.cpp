@@ -22,7 +22,7 @@ namespace enhancer
         makeCurrent();
         m_vbo.destroy();
         m_vao.destroy();
-        m_texture->destroy();
+        if (m_texture.get() != nullptr) { m_texture->destroy(); }
         doneCurrent();
     }
 
