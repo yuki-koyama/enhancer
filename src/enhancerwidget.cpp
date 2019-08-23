@@ -1,4 +1,5 @@
 #include <enhancer/enhancerwidget.hpp>
+#include <QFile>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <iostream>
@@ -55,9 +56,44 @@ namespace enhancer
             -1.0, +1.0,
         };
 
+        const auto code_loader = [](const char* file_name) -> QString
+        {
+            QFile file(file_name);
+
+            if (!file.open(QIODevice::ReadOnly))
+            {
+                std::cerr << "Error: failed to load shader codes." << std::endl;
+            }
+
+#if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
+            QString code;
+            QTextStream stream(&file);
+            while (!stream.atEnd())
+            {
+                QString line = stream.readLine();
+
+                if (line.contains("#version"))
+                {
+                    line.append("\n\n#define ENHANCER_WITH_LIFT_GAMMA_GAIN\n");
+                }
+
+                code.append(line).append("\n");
+            }
+#else
+            const QString code = QTextStream(&file).readAll();
+#endif
+
+            file.close();
+
+            return code;
+        };
+
+        const QString vert_code = code_loader("://shaders/enhancer.vs");
+        const QString frag_code = code_loader("://shaders/enhancer.fs");
+
         m_program = std::make_shared<QOpenGLShaderProgram>();
-        m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, "://shaders/enhancer.vs");
-        m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, "://shaders/enhancer.fs");
+        m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vert_code);
+        m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, frag_code);
         m_program->link();
         m_program->bind();
         m_program->setUniformValue("texture_sampler", TEXTURE_UNIT_ID);

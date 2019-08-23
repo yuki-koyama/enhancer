@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 option(ENHANCER_USE_QT_FEATURES "Build Qt features" OFF)
 option(ENHANCER_BUILD_QT_TESTS "Build Qt-based tests" OFF)
+option(ENHANCER_USE_ADVANCED_PARAMETERS "Use additional advanced parameters" OFF)
 
 set(ENHANCER_VERT_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/shaders/enhancer.vs" CACHE INTERNAL "")
 set(ENHANCER_FRAG_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/shaders/enhancer.fs" CACHE INTERNAL "")
@@ -35,6 +36,10 @@ if(ENHANCER_USE_QT_FEATURES)
   add_library(enhancer STATIC ${headers} ${sources} ${resources} ${shaders})
   target_link_libraries(enhancer Eigen3::Eigen Qt5::Gui Qt5::Widgets)
   target_include_directories(enhancer PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
+  if(ENHANCER_USE_ADVANCED_PARAMETERS)
+    target_compile_definitions(enhancer PUBLIC ENHANCER_WITH_LIFT_GAMMA_GAIN)
+  endif()
+
   install(FILES ${headers} DESTINATION include/enhancer)
   install(TARGETS enhancer ARCHIVE DESTINATION lib)
 
@@ -48,5 +53,9 @@ else()
   add_library(enhancer INTERFACE)
   target_sources(enhancer INTERFACE ${headers})
   target_include_directories(enhancer INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  if(ENHANCER_USE_ADVANCED_PARAMETERS)
+    target_compile_definitions(enhancer INTERFACE ENHANCER_WITH_LIFT_GAMMA_GAIN)
+  endif()
+
   install(FILES ${headers} DESTINATION include/enhancer)
 endif()
