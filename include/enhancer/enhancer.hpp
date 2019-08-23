@@ -266,16 +266,16 @@ namespace enhancer
         {
             assert(parameters.size() == NUM_PARAMETERS);
 
-            const double brightness  = parameters[0] - 0.5;
-            const double contrast    = parameters[1] - 0.5;
-            const double saturation  = parameters[2] - 0.5;
-            const double temperature = parameters[3] - 0.5;
-            const double tint        = parameters[4] - 0.5;
+            const double brightness  = clamp(parameters[0]) - 0.5;
+            const double contrast    = clamp(parameters[1]) - 0.5;
+            const double saturation  = clamp(parameters[2]) - 0.5;
+            const double temperature = clamp(parameters[3]) - 0.5;
+            const double tint        = clamp(parameters[4]) - 0.5;
 
 #if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
-            const Eigen::Vector3d lift  = Eigen::Vector3d::Constant(0.5) + parameters.segment<3>(5); // [0.5, 1.5]^3
-            const Eigen::Vector3d gamma = 2.0 * parameters.segment<3>(8);  // [0, 2]^3
-            const Eigen::Vector3d gain  = 2.0 * parameters.segment<3>(11); // [0, 2]^3
+            const Eigen::Vector3d lift  = Eigen::Vector3d::Constant(0.5) + clamp(parameters.segment<3>(5)); // [0.5, 1.5]^3
+            const Eigen::Vector3d gamma = 2.0 * clamp(parameters.segment<3>(8));  // [0.0, 2.0]^3
+            const Eigen::Vector3d gain  = 2.0 * clamp(parameters.segment<3>(11)); // [0.0, 2.0]^3
 #endif
 
             Eigen::Vector3d linear_rgb = convertRgbToLinearRgb(input_rgb);

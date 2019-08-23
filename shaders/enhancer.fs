@@ -262,16 +262,16 @@ vec3 applyContrastEffect(const vec3 linear_rgb, const float contrast)
 vec3 enhance(vec3 color)
 {
     // Retrieve enhancement parameters
-    float brightness   = parameters[0] - 0.5;
-    float contrast     = parameters[1] - 0.5;
-    float saturation   = parameters[2] - 0.5;
-    float temperature  = parameters[3] - 0.5;
-    float tint         = parameters[4] - 0.5;
+    float brightness   = clamp(parameters[0], 0.0, 1.0) - 0.5;
+    float contrast     = clamp(parameters[1], 0.0, 1.0) - 0.5;
+    float saturation   = clamp(parameters[2], 0.0, 1.0) - 0.5;
+    float temperature  = clamp(parameters[3], 0.0, 1.0) - 0.5;
+    float tint         = clamp(parameters[4], 0.0, 1.0) - 0.5;
 
 #if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
-    vec3 lift  = vec3(0.5) + vec3(parameters[5], parameters[6], parameters[7]); // [0.5, 1.5]^3
-    vec3 gamma = 2.0 * vec3(parameters[8], parameters[9], parameters[10]);      // [0, 2]^3
-    vec3 gain  = 2.0 * vec3(parameters[11], parameters[12], parameters[13]);    // [0, 2]^3
+    vec3 lift  = vec3(0.5) + clamp(vec3(parameters[5], parameters[6], parameters[7]), 0.0, 1.0); // [0.5, 1.5]^3
+    vec3 gamma = 2.0 * clamp(vec3(parameters[8], parameters[9], parameters[10]), 0.0, 1.0);      // [0.0, 2.0]^3
+    vec3 gain  = 2.0 * clamp(vec3(parameters[11], parameters[12], parameters[13]), 0.0, 1.0);    // [0.0, 2.0]^3
 #endif
 
     vec3 linear_rgb = convertRgbToLinearRgb(color);
