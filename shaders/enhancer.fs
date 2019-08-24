@@ -228,7 +228,7 @@ vec3 applyLiftGammaGainEffect(const vec3 linear_rgb, const vec3 lift, const vec3
 {
     vec3 lift_applied_linear_rgb  = clamp((linear_rgb - vec3(1.0)) * (vec3(2.0) - lift) + vec3(1.0), 0.0, 1.0);
     vec3 gain_applied_linear_rgb  = lift_applied_linear_rgb * gain;
-    vec3 gamma_applied_linear_rgb = pow(gain_applied_linear_rgb, vec3(1.0) / clamp(gamma, 1e-06, 2.0));
+    vec3 gamma_applied_linear_rgb = pow(gain_applied_linear_rgb, vec3(1.0) / gamma);
 
     return gamma_applied_linear_rgb;
 }
@@ -269,9 +269,9 @@ vec3 enhance(vec3 color)
     float tint         = clamp(parameters[4], 0.0, 1.0) - 0.5;
 
 #if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
-    vec3 lift  = vec3(0.5) + clamp(vec3(parameters[5], parameters[6], parameters[7]), 0.0, 1.0); // [0.5, 1.5]^3
-    vec3 gamma = 2.0 * clamp(vec3(parameters[8], parameters[9], parameters[10]), 0.0, 1.0);      // [0.0, 2.0]^3
-    vec3 gain  = 2.0 * clamp(vec3(parameters[11], parameters[12], parameters[13]), 0.0, 1.0);    // [0.0, 2.0]^3
+    vec3 lift  = vec3(0.5) + clamp(vec3(parameters[5], parameters[6], parameters[7]), 0.0, 1.0);    // [0.5, 1.5]^3
+    vec3 gamma = vec3(0.5) + clamp(vec3(parameters[8], parameters[9], parameters[10]), 0.0, 1.0);   // [0.5, 1.5]^3
+    vec3 gain  = vec3(0.5) + clamp(vec3(parameters[11], parameters[12], parameters[13]), 0.0, 1.0); // [0.5, 1.5]^3
 #endif
 
     vec3 linear_rgb = convertRgbToLinearRgb(color);
