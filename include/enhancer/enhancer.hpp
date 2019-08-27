@@ -7,7 +7,7 @@
 namespace enhancer
 {
 #if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
-    constexpr int NUM_PARAMETERS = 14;
+    constexpr int NUM_PARAMETERS = 12;
 #else
     constexpr int NUM_PARAMETERS = 5;
 #endif
@@ -269,13 +269,14 @@ namespace enhancer
             const double brightness  = clamp(parameters[0]) - 0.5;
             const double contrast    = clamp(parameters[1]) - 0.5;
             const double saturation  = clamp(parameters[2]) - 0.5;
-            const double temperature = clamp(parameters[3]) - 0.5;
-            const double tint        = clamp(parameters[4]) - 0.5;
 
 #if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
-            const Eigen::Vector3d lift  = Eigen::Vector3d::Constant(0.5) + clamp(parameters.segment<3>(5));  // [0.5, 1.5]^3
-            const Eigen::Vector3d gamma = Eigen::Vector3d::Constant(0.5) + clamp(parameters.segment<3>(8));  // [0.5, 1.5]^3
-            const Eigen::Vector3d gain  = Eigen::Vector3d::Constant(0.5) + clamp(parameters.segment<3>(11)); // [0.5, 1.5]^3
+            const Eigen::Vector3d lift  = Eigen::Vector3d::Constant(0.5) + clamp(parameters.segment<3>(3)); // [0.5, 1.5]^3
+            const Eigen::Vector3d gamma = Eigen::Vector3d::Constant(0.5) + clamp(parameters.segment<3>(6)); // [0.5, 1.5]^3
+            const Eigen::Vector3d gain  = Eigen::Vector3d::Constant(0.5) + clamp(parameters.segment<3>(9)); // [0.5, 1.5]^3
+#else
+            const double temperature = clamp(parameters[3]) - 0.5;
+            const double tint        = clamp(parameters[4]) - 0.5;
 #endif
 
             Eigen::Vector3d linear_rgb = convertRgbToLinearRgb(input_rgb);
@@ -283,10 +284,10 @@ namespace enhancer
 #if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
             // Lift/Gamma/Gain
             linear_rgb = applyLiftGammaGainEffect(linear_rgb, lift, gamma, gain);
-#endif
-
+#else
             // Approximate temperature/tint effect
             linear_rgb = applyTemperatureTintEffect(linear_rgb, temperature, tint);
+#endif
 
             // Brightness
             linear_rgb = applyBrightnessEffect(linear_rgb, brightness);

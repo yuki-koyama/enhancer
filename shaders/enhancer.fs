@@ -7,7 +7,7 @@ uniform sampler2D texture_sampler;
 #if defined(ENHANCER_V_1_0)
 uniform float parameters[6];
 #elif defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
-uniform float parameters[14];
+uniform float parameters[12];
 #else
 uniform float parameters[5];
 #endif
@@ -265,13 +265,14 @@ vec3 enhance(vec3 color)
     float brightness   = clamp(parameters[0], 0.0, 1.0) - 0.5;
     float contrast     = clamp(parameters[1], 0.0, 1.0) - 0.5;
     float saturation   = clamp(parameters[2], 0.0, 1.0) - 0.5;
-    float temperature  = clamp(parameters[3], 0.0, 1.0) - 0.5;
-    float tint         = clamp(parameters[4], 0.0, 1.0) - 0.5;
 
 #if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
-    vec3 lift  = vec3(0.5) + clamp(vec3(parameters[5], parameters[6], parameters[7]), 0.0, 1.0);    // [0.5, 1.5]^3
-    vec3 gamma = vec3(0.5) + clamp(vec3(parameters[8], parameters[9], parameters[10]), 0.0, 1.0);   // [0.5, 1.5]^3
-    vec3 gain  = vec3(0.5) + clamp(vec3(parameters[11], parameters[12], parameters[13]), 0.0, 1.0); // [0.5, 1.5]^3
+    vec3 lift  = vec3(0.5) + clamp(vec3(parameters[3], parameters[4], parameters[5]), 0.0, 1.0);   // [0.5, 1.5]^3
+    vec3 gamma = vec3(0.5) + clamp(vec3(parameters[6], parameters[7], parameters[8]), 0.0, 1.0);   // [0.5, 1.5]^3
+    vec3 gain  = vec3(0.5) + clamp(vec3(parameters[9], parameters[10], parameters[11]), 0.0, 1.0); // [0.5, 1.5]^3
+#else
+    float temperature  = clamp(parameters[3], 0.0, 1.0) - 0.5;
+    float tint         = clamp(parameters[4], 0.0, 1.0) - 0.5;
 #endif
 
     vec3 linear_rgb = convertRgbToLinearRgb(color);
@@ -279,10 +280,10 @@ vec3 enhance(vec3 color)
 #if defined(ENHANCER_WITH_LIFT_GAMMA_GAIN)
     // Lift/Gamma/Gain
     linear_rgb = applyLiftGammaGainEffect(linear_rgb, lift, gamma, gain);
-#endif
-
+#else
     // Approximate temperature/tint effect
     linear_rgb = applyTemperatureTintEffect(linear_rgb, temperature, tint);
+#endif
 
     // Brightness
     linear_rgb = applyBrightnessEffect(linear_rgb, brightness);
