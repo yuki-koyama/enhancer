@@ -317,7 +317,8 @@ namespace enhancer
             rgb *= 1.0 + brightness;
 
             // contrast
-            const double contrast_coef = std::tan((contrast + 1.0) * M_PI_4);
+            constexpr double pi_4 = 3.14159265358979 * 0.25;
+            const double contrast_coef = std::tan((contrast + 1.0) * pi_4);
             rgb = contrast_coef * (rgb - Eigen::Vector3d::Constant(0.5)) + Eigen::Vector3d::Constant(0.5);
 
             // clamp
