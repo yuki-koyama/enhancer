@@ -19,7 +19,13 @@ namespace enhancer
     class EnhancerWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_2_Core
     {
     public:
-        EnhancerWidget(QWidget* parent = nullptr);
+        enum class Policy
+        {
+            AspectFit,
+            AspectFill,
+        };
+
+        EnhancerWidget(const Policy policy = Policy::AspectFit, QWidget* parent = nullptr);
         ~EnhancerWidget();
 
         void setImage(const QImage& image);
@@ -57,6 +63,7 @@ namespace enhancer
     private:
         QImage m_image;
         bool   m_dirty;
+        Policy m_policy;
 
         std::array<GLfloat, NUM_PARAMETERS> m_parameters;
 

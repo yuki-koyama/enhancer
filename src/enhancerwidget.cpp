@@ -8,9 +8,10 @@
 
 namespace enhancer
 {
-    EnhancerWidget::EnhancerWidget(QWidget* parent) :
+    EnhancerWidget::EnhancerWidget(const Policy policy, QWidget* parent) :
     QOpenGLWidget(parent),
-    m_dirty(true)
+    m_dirty(true),
+    m_policy(policy)
     {
         m_image = QImage(64, 64, QImage::Format_RGBA8888);
         m_image.fill(Qt::GlobalColor::darkGray);
@@ -124,19 +125,44 @@ namespace enhancer
         const int image_height = this->m_image.height();
         const int w = width() * devicePixelRatio();
         const int h = height() * devicePixelRatio();
-        if (w * image_height == h * image_width)
-        {
-            glViewport(0, 0, w, h);
-        }
-        else if (w * image_height > h * image_width)
-        {
-            const int w_corrected = h * image_width / image_height;
-            glViewport((w - w_corrected) / 2, 0, w_corrected, h);
-        }
-        else if (w * image_height < h * image_width)
-        {
-            const int h_corrected = w * image_height / image_width;
-            glViewport(0, (h - h_corrected) / 2, w, h_corrected);
+
+        switch (m_policy) {
+            case Policy::AspectFit:
+            {
+                if (w * image_height == h * image_width)
+                {
+                    glViewport(0, 0, w, h);
+                }
+                else if (w * image_height > h * image_width)
+                {
+                    const int w_corrected = h * image_width / image_height;
+                    glViewport((w - w_corrected) / 2, 0, w_corrected, h);
+                }
+                else if (w * image_height < h * image_width)
+                {
+                    const int h_corrected = w * image_height / image_width;
+                    glViewport(0, (h - h_corrected) / 2, w, h_corrected);
+                }
+                break;
+            }
+            case Policy::AspectFill:
+            {
+                if (w * image_height == h * image_width)
+                {
+                    glViewport(0, 0, w, h);
+                }
+                else if (w * image_height > h * image_width)
+                {
+                    const int h_corrected = w * image_height / image_width;
+                    glViewport(0, (h - h_corrected) / 2, w, h_corrected);
+                }
+                else if (w * image_height < h * image_width)
+                {
+                    const int w_corrected = h * image_width / image_height;
+                    glViewport((w - w_corrected) / 2, 0, w_corrected, h);
+                }
+                break;
+            }
         }
 
         if (m_dirty)
