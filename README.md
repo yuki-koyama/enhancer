@@ -74,8 +74,9 @@ where `input_rgb` is a 3-dimensional vector (\[0, 1\]^3), and `parameters` is a 
 
 ## Projects using enhancer
 
-- Sequential Line Search <https://github.com/yuki-koyama/sequential-line-search>
-- SelPh <https://github.com/yuki-koyama/selph>
+- Sequential Gallery [SIGGRAPH 2020] <https://github.com/yuki-koyama/sequential-gallery>
+- Sequential Line Search [SIGGRAPH 2017] <https://github.com/yuki-koyama/sequential-line-search>
+- SelPh [CHI 2016] <https://github.com/yuki-koyama/selph>
 
 ## Note: About Older Version (v1)
 
