@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/yuki-koyama/enhancer.svg?branch=master)](https://travis-ci.com/yuki-koyama/enhancer)
 ![GitHub](https://img.shields.io/github/license/yuki-koyama/enhancer)
 
-A C++11 / GLSL library for enhancing photographs (adjusting brightness, contrast, etc.).
+A C++/GLSL library for enhancing photographs (adjusting brightness, contrast, etc.).
 
 This repository contains the following three features:
 - __GLSL shaders__: Enhancement functionality as shaders for real-time enhancement applications.
@@ -58,11 +58,11 @@ Tint
 
 ### C++ Features
 
-- Eigen
+- Eigen (for macOS users, `brew install eigen`)
 
 ### C++ Qt Features
 
-- Qt5
+- Qt6 (for macOS users, `brew install qt`)
 
 ## C++ API
 
