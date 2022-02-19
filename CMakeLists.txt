@@ -12,8 +12,16 @@ set(ENHANCER_VERT_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/shaders/enhancer.vs" 
 set(ENHANCER_FRAG_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/shaders/enhancer.fs" CACHE INTERNAL "")
 
 if(ENHANCER_USE_QT_FEATURES)
-  find_package(Qt6 COMPONENTS OpenGL OpenGLWidgets Widgets Gui REQUIRED)
+  # Try to find Qt6; if not found, then Qt5
+  find_package(Qt6 COMPONENTS OpenGL OpenGLWidgets Widgets Gui)
+  if(NOT Qt6_FOUND)
+    find_package(Qt5 COMPONENTS OpenGL Widgets Gui)
+    if(NOT Qt5_FOUND)
+      error("Neither Qt6 nor Qt5 was found.")
+    endif()
+  endif()
 
+  # Try to find Eigen 3.x and make sure to have Eigen3::Eigen
   find_package(Eigen3 REQUIRED)
   if((NOT TARGET Eigen3::Eigen) AND (DEFINED EIGEN3_INCLUDE_DIR))
     add_library(AliasEigen3 INTERFACE)
@@ -29,7 +37,15 @@ if(ENHANCER_USE_QT_FEATURES)
   qt_add_resources(resources ${CMAKE_CURRENT_SOURCE_DIR}/enhancer-resources.qrc)
 
   add_library(enhancer STATIC ${headers} ${sources} ${resources} ${shaders})
-  target_link_libraries(enhancer Eigen3::Eigen Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Widgets Qt6::Gui)
+
+  # Link libraries
+  target_link_libraries(enhancer Eigen3::Eigen)
+  if(Qt6_FOUND)
+    target_link_libraries(enhancer Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Widgets Qt6::Gui)
+  else()
+    target_link_libraries(enhancer Qt5::OpenGL Qt5::Widgets Qt5::Gui)
+  endif()
+
   target_include_directories(enhancer PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
   if(ENHANCER_USE_ADVANCED_PARAMETERS)
     target_compile_definitions(enhancer PUBLIC ENHANCER_WITH_LIFT_GAMMA_GAIN)
