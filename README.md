@@ -1,6 +1,7 @@
 # enhancer
 
-[![Build Status](https://travis-ci.com/yuki-koyama/enhancer.svg?branch=master)](https://travis-ci.com/yuki-koyama/enhancer)
+[![macOS-Qt6](https://github.com/yuki-koyama/enhancer/actions/workflows/macos.yml/badge.svg)](https://github.com/yuki-koyama/enhancer/actions/workflows/macos.yml)
+[![Ubuntu-Qt5](https://github.com/yuki-koyama/enhancer/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/yuki-koyama/enhancer/actions/workflows/ubuntu.yml)
 ![GitHub](https://img.shields.io/github/license/yuki-koyama/enhancer)
 
 A C++/GLSL library for enhancing photographs (adjusting brightness, contrast, etc.).
@@ -58,11 +59,11 @@ Tint
 
 ### C++ Features
 
-- Eigen (for macOS users, `brew install eigen`)
+- Eigen (for macOS users, `brew install eigen`; for Ubuntu18.04 users, `apt-get install libeigen3-dev`)
 
 ### C++ Qt Features
 
-- Qt6 (for macOS users, `brew install qt`)
+- Qt6 (for macOS users, `brew install qt`) or Qt5 (for Ubuntu 18.04 users, `apt-get install qt5-default`)
 
 ## C++ API
 
