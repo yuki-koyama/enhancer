@@ -15,9 +15,10 @@ if(ENHANCER_USE_QT_FEATURES)
   # Try to find Qt6; if not found, then Qt5
   find_package(Qt6 COMPONENTS OpenGL OpenGLWidgets Widgets Gui)
   if(NOT Qt6_FOUND)
+    message(WARNING "Qt6 was not found; Qt5 will be searched for instead.")
     find_package(Qt5 COMPONENTS OpenGL Widgets Gui)
     if(NOT Qt5_FOUND)
-      error("Neither Qt6 nor Qt5 was found.")
+      message(FATAL_ERROR "Neither Qt6 nor Qt5 was found.")
     endif()
   endif()
 
@@ -33,8 +34,13 @@ if(ENHANCER_USE_QT_FEATURES)
   file(GLOB sources ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
   file(GLOB shaders ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.fs ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vs)
 
+  # Process resource files (including shaders)
   set(CMAKE_AUTORCC ON)
-  qt_add_resources(resources ${CMAKE_CURRENT_SOURCE_DIR}/enhancer-resources.qrc)
+  if(Qt6_FOUND)
+    qt6_add_resources(resources ${CMAKE_CURRENT_SOURCE_DIR}/enhancer-resources.qrc)
+  else()
+    qt5_add_resources(resources ${CMAKE_CURRENT_SOURCE_DIR}/enhancer-resources.qrc)
+  endif()
 
   add_library(enhancer STATIC ${headers} ${sources} ${resources} ${shaders})
 
