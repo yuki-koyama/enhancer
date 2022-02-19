@@ -1,0 +1,21 @@
+name: Ubuntu-Qt5
+
+on: [push]
+
+jobs:
+  build-test:
+
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: install-build-dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install libeigen3-dev libqt5opengl5-dev qt5-default
+    - name: build
+      run: |
+        cmake . -DENHANCER_BUILD_QT_TESTS=ON -DENHANCER_USE_QT_FEATURES=ON
+        make
+    - name: ctest
+      run: ctest

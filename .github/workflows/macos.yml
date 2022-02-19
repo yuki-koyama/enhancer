@@ -1,0 +1,19 @@
+name: macOS-Qt6
+
+on: [push]
+
+jobs:
+  build-test:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: install-build-dependencies
+      run: brew install eigen qt
+    - name: build
+      run: |
+        cmake . -DENHANCER_BUILD_QT_TESTS=ON -DENHANCER_USE_QT_FEATURES=ON
+        make
+    - name: ctest
+      run: ctest
