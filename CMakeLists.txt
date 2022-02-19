@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.16)
 
 project(enhancer CXX)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(ENHANCER_USE_QT_FEATURES "Build Qt features" OFF)
 option(ENHANCER_BUILD_QT_TESTS "Build Qt-based tests" OFF)
@@ -11,16 +12,7 @@ set(ENHANCER_VERT_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/shaders/enhancer.vs" 
 set(ENHANCER_FRAG_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/shaders/enhancer.fs" CACHE INTERNAL "")
 
 if(ENHANCER_USE_QT_FEATURES)
-  if(APPLE AND EXISTS /usr/local/opt/qt)
-    list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt")
-  endif()
-  if(APPLE AND EXISTS /usr/local/opt/qt5)
-    list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt5")
-  endif()
-  if(APPLE AND EXISTS /opt/homebrew/opt/qt5)
-    list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt5")
-  endif()
-  find_package(Qt5 COMPONENTS Gui Widgets REQUIRED)
+  find_package(Qt6 COMPONENTS OpenGL OpenGLWidgets Widgets Gui REQUIRED)
 
   find_package(Eigen3 REQUIRED)
   if((NOT TARGET Eigen3::Eigen) AND (DEFINED EIGEN3_INCLUDE_DIR))
@@ -34,10 +26,10 @@ if(ENHANCER_USE_QT_FEATURES)
   file(GLOB shaders ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.fs ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vs)
 
   set(CMAKE_AUTORCC ON)
-  qt5_add_resources(resources ${CMAKE_CURRENT_SOURCE_DIR}/enhancer-resources.qrc)
+  qt_add_resources(resources ${CMAKE_CURRENT_SOURCE_DIR}/enhancer-resources.qrc)
 
   add_library(enhancer STATIC ${headers} ${sources} ${resources} ${shaders})
-  target_link_libraries(enhancer Eigen3::Eigen Qt5::Gui Qt5::Widgets)
+  target_link_libraries(enhancer Eigen3::Eigen Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Widgets Qt6::Gui)
   target_include_directories(enhancer PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
   if(ENHANCER_USE_ADVANCED_PARAMETERS)
     target_compile_definitions(enhancer PUBLIC ENHANCER_WITH_LIFT_GAMMA_GAIN)
