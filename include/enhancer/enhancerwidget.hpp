@@ -55,6 +55,13 @@ namespace enhancer
             for (int i = 0; i < NUM_PARAMETERS; ++ i) { m_parameters[i] = static_cast<GLfloat>(parameters[i]); }
         }
 
+        template <typename T>
+        void setParameters(const Eigen::Vector<T, Eigen::Dynamic>& parameters)
+        {
+            assert(parameters.size() == NUM_PARAMETERS);
+            for (int i = 0; i < NUM_PARAMETERS; ++ i) { m_parameters[i] = static_cast<GLfloat>(parameters[i]); }
+        }
+
     protected:
         void initializeGL() override;
         void paintGL() override;
