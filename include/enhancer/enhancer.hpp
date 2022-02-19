@@ -1,8 +1,8 @@
 #ifndef enhancer_hpp
 #define enhancer_hpp
 
-#include <cmath>
 #include <Eigen/Core>
+#include <cmath>
 
 namespace enhancer
 {
@@ -333,12 +333,12 @@ namespace enhancer
 
             return output_rgb;
         }
-    }
+    } // namespace internal
 
     inline Eigen::Vector3d enhance(const Eigen::Vector3d& input_rgb, const Eigen::VectorXd& parameters)
     {
         return internal::enhance(input_rgb, parameters);
     }
-}
+} // namespace enhancer
 
 #endif /* enhancer_hpp */

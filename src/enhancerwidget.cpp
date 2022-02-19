@@ -1,7 +1,7 @@
-#include <enhancer/enhancerwidget.hpp>
 #include <QFile>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
+#include <enhancer/enhancerwidget.hpp>
 #include <iostream>
 
 #define TEXTURE_UNIT_ID 0
@@ -182,7 +182,5 @@ namespace enhancer
         m_program->release();
     }
 
-    void EnhancerWidget::resizeGL(int width, int height)
-    {
-    }
-}
+    void EnhancerWidget::resizeGL(int width, int height) {}
+} // namespace enhancer

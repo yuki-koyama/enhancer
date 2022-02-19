@@ -1,17 +1,17 @@
-#include <enhancer/enhancerwidget.hpp>
 #include <QApplication>
+#include <enhancer/enhancerwidget.hpp>
 
 #if defined(EXPORT_TEST)
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 std::string convertParametersToString(const Eigen::VectorXd& parameters)
 {
     std::ostringstream sstream;
 
     sstream << "p";
-    for (int i = 0; i < parameters.size(); ++ i)
+    for (int i = 0; i < parameters.size(); ++i)
     {
         sstream << "_";
         sstream << std::fixed << std::setprecision(2) << parameters[i];
@@ -46,9 +46,9 @@ int main(int argc, char** argv)
     widget.setFixedWidth(width / 2);
     widget.setFixedHeight(height / 2);
 
-    for (int dim = 0; dim < enhancer::NUM_PARAMETERS; ++ dim)
+    for (int dim = 0; dim < enhancer::NUM_PARAMETERS; ++dim)
     {
-        for (int step = 0; step < num_steps; ++ step)
+        for (int step = 0; step < num_steps; ++step)
         {
             std::vector<double> parameters_data(enhancer::NUM_PARAMETERS, 0.5);
             parameters_data[dim] = static_cast<double>(step) / static_cast<double>(num_steps - 1);

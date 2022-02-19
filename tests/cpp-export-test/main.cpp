@@ -1,15 +1,16 @@
-#include <string>
-#include <sstream>
-#include <iomanip>
-#include <enhancer/enhancer.hpp>
 #include <QImage>
+#include <enhancer/enhancer.hpp>
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <vector>
 
 std::string convertParametersToString(const Eigen::VectorXd& parameters)
 {
     std::ostringstream sstream;
 
     sstream << "p";
-    for (int i = 0; i < parameters.size(); ++ i)
+    for (int i = 0; i < parameters.size(); ++i)
     {
         sstream << "_";
         sstream << std::fixed << std::setprecision(2) << parameters[i];
@@ -18,21 +19,27 @@ std::string convertParametersToString(const Eigen::VectorXd& parameters)
     return sstream.str();
 }
 
+inline QRgb convertEigenToQRgb(const Eigen::Vector3d& color)
+{
+    return qRgb(color[0] * 255.0, color[1] * 255.0, color[2] * 255.0);
+}
+
+inline Eigen::Vector3d convertQRgbToEigen(const QRgb& color)
+{
+    return Eigen::Vector3d(qRed(color), qGreen(color), qBlue(color)) / 255.0;
+}
+
 QImage enhanceQImage(const QImage& target_image, const Eigen::VectorXd& parameters)
 {
     QImage enhanced_image(target_image.size(), target_image.format());
-    for (int x = 0; x < target_image.width(); ++ x)
+    for (int x = 0; x < target_image.width(); ++x)
     {
-        for (int y = 0; y < target_image.height(); ++ y)
+        for (int y = 0; y < target_image.height(); ++y)
         {
             const QRgb            qrgb_color           = target_image.pixel(x, y);
-            const Eigen::Vector3d eigen_color          = Eigen::Vector3d(qRed(qrgb_color),
-                                                                         qGreen(qrgb_color),
-                                                                         qBlue(qrgb_color)) / 255.0;
+            const Eigen::Vector3d eigen_color          = convertQRgbToEigen(qrgb_color);
             const Eigen::Vector3d eigen_enhanced_color = enhancer::enhance(eigen_color, parameters);
-            const QRgb            qrgb_enhanced_color  = qRgb(eigen_enhanced_color[0] * 255,
-                                                              eigen_enhanced_color[1] * 255,
-                                                              eigen_enhanced_color[2] * 255);
+            const QRgb            qrgb_enhanced_color  = convertEigenToQRgb(eigen_enhanced_color);
 
             enhanced_image.setPixel(x, y, qrgb_enhanced_color);
         }
@@ -49,9 +56,9 @@ int main(int argc, char** argv)
     Q_INIT_RESOURCE(enhancer_resources);
     const QImage target_image = QImage("://test-images/DSC03039.JPG").scaledToWidth(target_width);
 
-    for (int dim = 0; dim < enhancer::NUM_PARAMETERS; ++ dim)
+    for (int dim = 0; dim < enhancer::NUM_PARAMETERS; ++dim)
     {
-        for (int step = 0; step < num_steps; ++ step)
+        for (int step = 0; step < num_steps; ++step)
         {
             std::vector<double> parameters_data(enhancer::NUM_PARAMETERS, 0.5);
             parameters_data[dim] = static_cast<double>(step) / static_cast<double>(num_steps - 1);

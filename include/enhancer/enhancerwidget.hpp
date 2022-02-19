@@ -1,15 +1,15 @@
 #ifndef enhancerwidget_hpp
 #define enhancerwidget_hpp
 
-#include <array>
-#include <cassert>
-#include <memory>
+#include <QImage>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions_3_2_Core>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
-#include <QImage>
+#include <array>
+#include <cassert>
 #include <enhancer/enhancer.hpp>
+#include <memory>
 
 class QOpenGLShaderProgram;
 class QOpenGLTexture;
@@ -73,6 +73,6 @@ namespace enhancer
         QOpenGLVertexArrayObject m_vao;
         QOpenGLBuffer            m_vbo;
     };
-}
+} // namespace enhancer
 
 #endif /* enhancerwidget_hpp */
